@@ -1,0 +1,28 @@
+node_modules/
+
+# Runtime data
+data/*.sqlite
+data/*.sqlite-*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Test / coverage output
+coverage/
+.nyc_output/
+
+# Local tool state
+.agents/
+.codex/

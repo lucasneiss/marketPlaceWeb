@@ -1,42 +1,33 @@
 const express = require('express');
 const session = require('express-session');
-const bcrypt = require('bcryptjs');
 const http = require('http');
 const { Server } = require('socket.io');
-const { Usuario } = require('./db');
-const PORTA = 3000;
 const path = require('path');
+
+const db = require('./src/database'); // Importa o banco e modelos
+const authRoutes = require('./src/routes/authRoutes'); // 1. IMPORTA AS ROTAS DE AUTENTICAÇÃO
+
+const PORTA = 3000;
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.set('views', path.join(__dirname, 'views'));
+// Configuração de Views ajustada para buscar dentro de src/views
+app.set('views', path.join(__dirname, 'src', 'views'));
 app.set('view engine', 'ejs');
 
-
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.static('public')); // Serve os arquivos estáticos (CSS, JS) da pasta public
 
-// Configuração da Sessão
+
 app.use(session({
-    secret: 'segredo_super_seguro_do_stop',
+    secret: 'segredo_marketplace',
     resave: false,
     saveUninitialized: false
 }));
 
-// Rota Raiz (Redireciona para o lobby se estiver logado, ou para o login se não estiver)
-app.get('/', (req, res) => {
-    if (req.session && req.session.userId) {
-        return res.redirect('/lobby');
-    }
-    res.redirect('/login');
-});
-
-
-// Middleware do Layout (Deixado antes das rotas para que todas possam usar)
 app.use((req, res, next) => {
     res.renderComLayout = function (view, dados = {}) {
-        // Garante que o username da sessão esteja sempre disponível para o layout.ejs
         const dadosEscopo = {
             username: req.session ? req.session.username : null,
             ...res.locals,
@@ -54,5 +45,13 @@ app.use((req, res, next) => {
     next();
 });
 
-server.listen(PORTA, () => console.log('Servidor rodando na porta '+ PORTA));
+app.use('/', authRoutes);
 
+db.sequelize.authenticate()
+    .then(() => {
+        console.log('Conexão com o banco de dados estabelecida com sucesso.');
+        server.listen(PORTA, () => console.log('Servidor rodando na porta ' + PORTA));
+    })
+    .catch((error) => {
+        console.error('Erro ao conectar ao banco de dados:', error);
+    });

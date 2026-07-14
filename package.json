@@ -9,9 +9,14 @@
     "db:check": "node src/database/check.js"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
     "sequelize": "^6.37.7",
     "slugify": "^1.6.9",
+    "socket.io": "^4.8.3",
     "sqlite3": "^6.0.1"
   },
   "overrides": {

@@ -1,5 +1,3 @@
-const bcrypt = require('bcryptjs');
-
 const ROLE_DATA = [
   {
     code: 'CLIENT',
@@ -22,6 +20,7 @@ async function seedDatabase(models, transaction) {
   const { User, Role, Address, SellerProfile } = models;
   const roles = {};
 
+  // Criação dos cargos
   for (const roleData of ROLE_DATA) {
     const [role] = await Role.findOrCreate({
       where: { code: roleData.code },
@@ -31,30 +30,30 @@ async function seedDatabase(models, transaction) {
     roles[role.code] = role;
   }
 
-  const demoPasswordHash = await bcrypt.hash(
-    process.env.SEED_DEMO_PASSWORD || 'Marketplace@123',
-    12,
-  );
+  const demoPlainPassword = process.env.SEED_DEMO_PASSWORD || 'Marketplace@123';
 
+  //Criação do Admin
   const [admin] = await User.findOrCreate({
     where: { email: 'admin@marketplace.local' },
     defaults: {
       name: 'Administrador Demo',
-      passwordHash: demoPasswordHash,
+      passwordHash: demoPlainPassword, // Passamos a senha pura; o hook do modelo vai gerar o hash!
     },
     transaction,
   });
   await admin.addRole(roles.ADMIN, { through: { assignedAt: new Date() }, transaction });
 
+  //Criação do Cliente
   const [client] = await User.findOrCreate({
     where: { email: 'cliente@marketplace.local' },
     defaults: {
       name: 'Cliente Demo',
-      passwordHash: demoPasswordHash,
+      passwordHash: demoPlainPassword, // Passamos a senha pura
     },
     transaction,
   });
   await client.addRole(roles.CLIENT, { through: { assignedAt: new Date() }, transaction });
+
   await Address.findOrCreate({
     where: { userId: client.id, label: 'Principal' },
     defaults: {
@@ -70,20 +69,21 @@ async function seedDatabase(models, transaction) {
     transaction,
   });
 
+  //Criação do Vendendor
   const [seller] = await User.findOrCreate({
     where: { email: 'vendedor@marketplace.local' },
     defaults: {
       name: 'Vendedor Demo',
-      passwordHash: demoPasswordHash,
+      passwordHash: demoPlainPassword, // Passamos a senha pura
     },
     transaction,
   });
   await seller.addRole(roles.SELLER, { through: { assignedAt: new Date() }, transaction });
+
   await SellerProfile.findOrCreate({
     where: { userId: seller.id },
     defaults: {
       storeName: 'Loja de Demonstração',
-      slug: 'loja-de-demonstracao',
       description: 'Perfil inicial para demonstração do marketplace.',
       status: 'APPROVED',
       approvedAt: new Date(),

@@ -71,6 +71,37 @@ class AuthController {
             next(error);
         }
     }
+    static async login(req, res, next) {
+        const { email, password } = req.body;
+
+        try {
+            const user = await User.scope('withPassword').findOne({ where: { email } });
+
+            if (!user) {
+                return res.send(`<script>alert("E-mail ou senha inválidos."); window.location.href="/login";</script>`);
+            }
+
+            const senhaCorreta = await user.checkPassword(password);
+            if (!senhaCorreta) {
+                return res.send(`<script>alert("E-mail ou senha inválidos."); window.location.href="/login";</script>`);
+            }
+
+            req.session.userId = user.id;
+            req.session.username = user.name;
+
+            res.redirect('/lobby');
+        } catch (error) {
+            next(error);
+        }
+    }
+    static showLobby(req, res) {
+        res.renderComLayout('lobby', { titulo: 'Início' });
+    }
+    static logout(req, res) {
+        req.session.destroy(() => {
+            res.redirect('/login');
+        });
+    }
 }
 
 module.exports = AuthController;

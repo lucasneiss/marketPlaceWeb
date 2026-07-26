@@ -94,13 +94,69 @@ class AuthController {
             next(error);
         }
     }
+
     static showLobby(req, res) {
         res.renderComLayout('lobby', { titulo: 'Início' });
     }
+
     static logout(req, res) {
         req.session.destroy(() => {
             res.redirect('/login');
         });
+    }
+
+    static async showProfile(req, res, next) {
+        try {
+            const user = await User.findByPk(req.session.userId);
+            res.renderComLayout('profile', { titulo: 'Meu perfil', user });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async updateProfile(req, res, next) {
+        const { name, email } = req.body;
+
+        try {
+            const user = await User.findByPk(req.session.userId);
+
+            user.name = name;
+            user.email = email;
+            await user.save();
+
+            req.session.username = user.name;
+
+            res.redirect('/profile');
+        } catch (error) {
+            next(error);
+        }
+    }
+    static showChangePassword(req, res) {
+        res.renderComLayout('change-password', { titulo: 'Trocar senha' });
+    }
+
+    static async changePassword(req, res, next) {
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+
+        try {
+            const user = await User.scope('withPassword').findByPk(req.session.userId);
+
+            const senhaAtualCorreta = await user.checkPassword(currentPassword);
+            if (!senhaAtualCorreta) {
+                return res.send(`<script>alert("Senha atual incorreta."); window.location.href="/change-password";</script>`);
+            }
+
+            if (newPassword !== confirmPassword) {
+                return res.send(`<script>alert("As senhas não coincidem."); window.location.href="/change-password";</script>`);
+            }
+
+            user.passwordHash = newPassword;
+            await user.save();
+
+            res.redirect('/profile');
+        } catch (error) {
+            next(error);
+        }
     }
 }
 

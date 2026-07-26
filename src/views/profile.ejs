@@ -1,0 +1,17 @@
+<div class="col-md-6 mx-auto">
+    <h2>Meu perfil</h2>
+
+    <form action="/profile" method="POST">
+        <div class="mb-3">
+            <label class="form-label">Nome</label>
+            <input type="text" name="name" class="form-control" value="<%= user.name %>" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">E-mail</label>
+            <input type="email" name="email" class="form-control" value="<%= user.email %>" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Salvar alterações</button>
+        <a href="/change-password" class="btn btn-link">Trocar senha</a>
+        <a href="/lobby" class="btn btn-outline-secondary">Voltar</a>
+    </form>
+</div>

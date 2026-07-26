@@ -47,6 +47,17 @@ app.use((req, res, next) => {
 
 app.use('/', authRoutes);
 
+// Rota não encontrada (404) - precisa vir depois de todas as outras rotas
+app.use((req, res) => {
+    res.status(404).render('errors/404');
+});
+
+// Erro interno (500) - sempre por último
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(500).render('errors/500');
+});
+
 db.sequelize.authenticate()
     .then(() => {
         console.log('Conexão com o banco de dados estabelecida com sucesso.');

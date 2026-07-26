@@ -1,0 +1,22 @@
+<div class="col-md-8 mx-auto">
+    <h2>Meus endereços</h2>
+    <a href="/addresses/new" class="btn btn-primary mb-3">Novo endereço</a>
+
+    <% addresses.forEach(function(addr) { %>
+        <div class="card mb-2">
+            <div class="card-body">
+                <h5 class="card-title"><%= addr.label %> <%= addr.isDefault ? '(Principal)' : '' %></h5>
+                <p class="card-text">
+                    <%= addr.street %>, <%= addr.number %> - <%= addr.neighborhood %><br>
+                    <%= addr.city %>/<%= addr.state %> - CEP <%= addr.postalCode %>
+                </p>
+                <a href="/addresses/<%= addr.id %>/edit" class="btn btn-sm btn-outline-secondary">Editar</a>
+                <form action="/addresses/<%= addr.id %>/delete" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    <% }); %>
+
+    <a href="/lobby" class="btn btn-link">Voltar</a>
+</div>

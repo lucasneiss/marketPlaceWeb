@@ -1,0 +1,44 @@
+<div class="col-md-6 mx-auto">
+    <h2><%= address ? 'Editar' : 'Novo' %> endereço</h2>
+
+    <form action="<%= address ? '/addresses/' + address.id : '/addresses' %>" method="POST">
+        <div class="mb-3">
+            <label class="form-label">Nome do endereço (ex: Casa, Trabalho)</label>
+            <input type="text" name="label" class="form-control" value="<%= address ? address.label : '' %>" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Nome do destinatário</label>
+            <input type="text" name="recipientName" class="form-control" value="<%= address ? address.recipientName : '' %>" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">CEP</label>
+            <input type="text" name="postalCode" class="form-control" value="<%= address ? address.postalCode : '' %>" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Rua</label>
+            <input type="text" name="street" class="form-control" value="<%= address ? address.street : '' %>" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Número</label>
+            <input type="text" name="number" class="form-control" value="<%= address ? address.number : '' %>" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Complemento</label>
+            <input type="text" name="complement" class="form-control" value="<%= address && address.complement ? address.complement : '' %>">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Bairro</label>
+            <input type="text" name="neighborhood" class="form-control" value="<%= address ? address.neighborhood : '' %>" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Cidade</label>
+            <input type="text" name="city" class="form-control" value="<%= address ? address.city : '' %>" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Estado (sigla, ex: MG)</label>
+            <input type="text" name="state" maxlength="2" class="form-control" value="<%= address ? address.state : '' %>" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="/addresses" class="btn btn-outline-secondary">Cancelar</a>
+    </form>
+</div>

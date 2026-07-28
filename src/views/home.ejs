@@ -1,0 +1,192 @@
+<div data-home-page>
+    <section class="hero-section">
+        <div class="container-xxl px-3 px-lg-4 position-relative">
+            <div class="row align-items-center g-5">
+                <div class="col-12 col-lg-6">
+                    <div class="hero-copy">
+                        <span class="hero-badge">
+                            <i class="bi bi-shield-check me-1" aria-hidden="true"></i>
+                            O melhor marketplace do estado do Maranhão
+                        </span>
+
+                        <h1 class="hero-title mt-4 mb-4">
+                            Compre e venda
+                            <span>com confiança</span>
+                        </h1>
+
+                        <p class="hero-description mb-4">
+                            Encontre produtos egregérios de diferentes vendedores em um só lugar,
+                            com praticidade, variedade e uma experiência pulquérrima feita para você.
+                        </p>
+
+                        <div class="hero-actions d-flex flex-column flex-sm-row gap-3">
+                            <a class="btn btn-light btn-lg hero-primary-button" href="#destaques">
+                                Explorar produtos
+                                <i class="bi bi-arrow-down-short ms-1" aria-hidden="true"></i>
+                            </a>
+                            <a class="btn btn-outline-light btn-lg hero-secondary-button" href="/register">
+                                Quero fazer parte
+                            </a>
+                        </div>
+
+                        <dl class="hero-stats d-flex flex-wrap gap-4 gap-md-5 mt-5 mb-0">
+                            <div>
+                                <dt>2 mil+</dt>
+                                <dd>Produtos</dd>
+                            </div>
+                            <div>
+                                <dt>180+</dt>
+                                <dd>Vendedores</dd>
+                            </div>
+                            <div>
+                                <dt>98%</dt>
+                                <dd>Satisfação</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="hero-category-grid" aria-label="Principais categorias">
+                        <% heroCategories.forEach(function(category) { %>
+                            <article class="hero-category-card">
+                                <div
+                                    class="hero-category-image <%= category.spriteClass %> <%= category.positionClass %>"
+                                    role="img"
+                                    aria-label="<%= category.name %>: <%= category.description %>"
+                                ></div>
+                                <div class="hero-category-overlay">
+                                    <span class="hero-category-icon" aria-hidden="true">
+                                        <i class="bi <%= category.icon %>"></i>
+                                    </span>
+                                    <div>
+                                        <h2><%= category.name %></h2>
+                                        <p><%= category.description %></p>
+                                    </div>
+                                </div>
+                            </article>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="market-section pb-4" id="categorias">
+        <div class="container-xxl px-3 px-lg-4">
+            <div class="section-heading mb-4">
+                <p class="section-eyebrow mb-2">Encontre seu próximo produto</p>
+                <h2 class="section-title mb-0">Categorias</h2>
+            </div>
+
+            <div class="category-scroller pb-2" role="group" aria-label="Filtrar produtos por categoria">
+                <button class="category-chip active" type="button" data-category-filter="todos" aria-pressed="true">
+                    <i class="bi bi-grid me-1" aria-hidden="true"></i> Todos
+                </button>
+                <% categories.forEach(function(category) { %>
+                    <button
+                        class="category-chip"
+                        type="button"
+                        data-category-filter="<%= category.name %>"
+                        aria-pressed="false"
+                    >
+                        <i class="bi <%= category.icon %> me-1" aria-hidden="true"></i>
+                        <%= category.name %>
+                    </button>
+                <% }); %>
+            </div>
+        </div>
+    </section>
+
+    <section class="market-section pt-4" id="destaques" data-product-section>
+        <div class="container-xxl px-3 px-lg-4">
+            <div class="d-flex align-items-end justify-content-between gap-3 mb-4">
+                <div class="section-heading">
+                    <p class="section-eyebrow mb-2">Seleção especial</p>
+                    <h2 class="section-title mb-0">Em destaque</h2>
+                </div>
+            </div>
+
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4 product-grid">
+                <% featuredProducts.forEach(function(product) { %>
+                    <%- include('partials/product-card', { product: product }) %>
+                <% }); %>
+            </div>
+        </div>
+    </section>
+
+    <section class="seller-cta-section">
+        <div class="container-xxl px-3 px-lg-4">
+            <div class="seller-cta">
+                <div>
+                    <p class="cta-kicker mb-2">Sua loja pode começar aqui</p>
+                    <h2 class="mb-2">Venda no Marketplace</h2>
+                    <p class="mb-0">Apresente seus produtos para novos compradores. Cadastro gratuito e simples.</p>
+                </div>
+                <a class="btn btn-light btn-lg flex-shrink-0" href="/register">
+                    Comece agora <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="market-section" id="mais-vendidos" data-product-section>
+        <div class="container-xxl px-3 px-lg-4">
+            <div class="d-flex align-items-end justify-content-between gap-3 mb-4">
+                <div class="section-heading">
+                    <p class="section-eyebrow mb-2">Os favoritos da comunidade</p>
+                    <h2 class="section-title mb-0">Mais vendidos</h2>
+                </div>
+            </div>
+
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4 product-grid">
+                <% bestSellers.forEach(function(product) { %>
+                    <%- include('partials/product-card', { product: product }) %>
+                <% }); %>
+            </div>
+        </div>
+    </section>
+
+    <div class="container-xxl px-3 px-lg-4">
+        <div class="home-empty-state text-center" data-no-products <%= featuredProducts.length || bestSellers.length ? 'hidden' : '' %>>
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <h2>Nenhum produto encontrado</h2>
+            <p>Tente buscar outro termo ou volte a visualizar todas as categorias.</p>
+            <a class="btn btn-brand" href="/">Limpar busca</a>
+        </div>
+    </div>
+
+    <section class="trust-section" id="sobre">
+        <div class="container-xxl px-3 px-lg-4">
+            <div class="row g-4">
+                <div class="col-12 col-md-4">
+                    <article class="trust-card h-100" id="seguranca">
+                        <span class="trust-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></span>
+                        <div>
+                            <h2>Compra segura</h2>
+                            <p class="mb-0">Uma experiência pensada para proteger seus dados em cada etapa.</p>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-12 col-md-4">
+                    <article class="trust-card h-100">
+                        <span class="trust-icon"><i class="bi bi-box-seam" aria-hidden="true"></i></span>
+                        <div>
+                            <h2>Variedade de produtos</h2>
+                            <p class="mb-0">Compare opções de diferentes vendedores sem sair da plataforma.</p>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-12 col-md-4">
+                    <article class="trust-card h-100" id="atendimento">
+                        <span class="trust-icon"><i class="bi bi-headset" aria-hidden="true"></i></span>
+                        <div>
+                            <h2>Suporte próximo</h2>
+                            <p class="mb-0">Conte com um canal de atendimento para tirar dúvidas quando precisar.</p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

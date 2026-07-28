@@ -6,6 +6,7 @@ const path = require('path');
 
 const db = require('./src/database'); // Importa o banco e modelos
 const authRoutes = require('./src/routes/authRoutes'); // 1. IMPORTA AS ROTAS DE AUTENTICAÇÃO
+const productRoutes = require('./src/routes/productRoutes');
 
 const PORTA = 3000;
 const app = express();
@@ -19,7 +20,6 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public')); // Serve os arquivos estáticos (CSS, JS) da pasta public
 
-
 app.use(session({
     secret: 'segredo_marketplace',
     resave: false,
@@ -30,6 +30,10 @@ app.use((req, res, next) => {
     res.renderComLayout = function (view, dados = {}) {
         const dadosEscopo = {
             username: req.session ? req.session.username : null,
+
+            pagina: '',
+            anoAtual: new Date().getFullYear(),
+
             ...res.locals,
             ...dados
         };
@@ -46,16 +50,32 @@ app.use((req, res, next) => {
 });
 
 app.use('/', authRoutes);
+app.use(productRoutes);
 
 // Rota não encontrada (404) - precisa vir depois de todas as outras rotas
 app.use((req, res) => {
-    res.status(404).render('errors/404');
+    res.status(404);
+
+    return res.renderComLayout(
+        'errors/404',
+        {
+            titulo: 'Página não encontrada | Marketplace',
+            pagina: 'error',
+        },
+    );
 });
 
 // Erro interno (500) - sempre por último
 app.use((err, req, res, next) => {
     console.error(err);
-    res.status(500).render('errors/500');
+    res.status(500);
+    return res.renderComLayout(
+        'errors/500',
+        {
+            titulo: 'Erro interno | Marketplace',
+            pagina: 'error',
+        },
+    );
 });
 
 db.sequelize.authenticate()
@@ -66,3 +86,5 @@ db.sequelize.authenticate()
     .catch((error) => {
         console.error('Erro ao conectar ao banco de dados:', error);
     });
+
+

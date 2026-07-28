@@ -1,0 +1,54 @@
+<!-- Card de produto pra hoem-->
+
+<div
+    class="col product-column"
+    data-product-card
+    data-category="<%= product.category %>"
+    data-search="<%= product.name + ' ' + product.category + ' ' + product.searchTerms %>"
+>
+    <article class="product-card h-100">
+        <div
+            class="product-image <%= product.spriteClass %> <%= product.positionClass %>"
+            role="img"
+            aria-label="Imagem demonstrativa de <%= product.name %>"
+        >
+            <% if (product.discount) { %>
+                <span class="discount-badge"><%= product.discount %></span>
+            <% } %>
+
+            <button
+                class="favorite-button"
+                type="button"
+                aria-label="Adicionar <%= product.name %> aos favoritos"
+                aria-pressed="false"
+                data-favorite
+            >
+                <i class="bi bi-heart" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <div class="product-card-body">
+            <p class="product-category mb-1"><%= product.category %></p>
+            <h3 class="product-name"><%= product.name %></h3>
+
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="star-rating" aria-label="Avaliação <%= product.rating %> de 5">
+                    <i class="bi bi-star-fill" aria-hidden="true"></i>
+                    <i class="bi bi-star-fill" aria-hidden="true"></i>
+                    <i class="bi bi-star-fill" aria-hidden="true"></i>
+                    <i class="bi bi-star-fill" aria-hidden="true"></i>
+                    <i class="bi bi-star-fill" aria-hidden="true"></i>
+                </span>
+                <span class="review-count">(<%= product.reviews %>)</span>
+            </div>
+
+            <div class="d-flex flex-wrap align-items-baseline gap-2">
+                <strong class="product-price"><%= product.price %></strong>
+                <% if (product.oldPrice) { %>
+                    <span class="old-price"><%= product.oldPrice %></span>
+                <% } %>
+            </div>
+            <p class="installment-text mb-0"><%= product.installments %></p>
+        </div>
+    </article>
+</div>

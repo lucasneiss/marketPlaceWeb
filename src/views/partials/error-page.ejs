@@ -1,0 +1,80 @@
+<!-- Estilização para páginas de erro-->
+
+<section
+    class="error-page error-<%= errorCode %>"
+    aria-labelledby="error-title"
+>
+    <div class="error-decoration" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="error-card">
+        <div class="error-visual" aria-hidden="true">
+            <span class="error-icon">
+                <i class="bi <%= errorIcon %>"></i>
+            </span>
+
+            <strong class="error-code">
+                <%= errorCode %>
+            </strong>
+        </div>
+
+        <div class="error-content">
+            <p class="error-eyebrow mb-2">
+                <%= errorEyebrow %>
+            </p>
+
+            <h1 class="error-title" id="error-title">
+                <%= errorTitle %>
+            </h1>
+
+            <p class="error-description">
+                <%= errorDescription %>
+            </p>
+
+            <% if (
+                typeof errorSuggestion !== 'undefined'
+                && errorSuggestion
+            ) { %>
+                <div class="error-suggestion">
+                    <i
+                        class="bi bi-lightbulb"
+                        aria-hidden="true"
+                    ></i>
+
+                    <span>
+                        <%= errorSuggestion %>
+                    </span>
+                </div>
+            <% } %>
+
+            <div class="error-actions">
+                <% actions.forEach(function(action) { %>
+                    <a
+                        class="btn <%= action.primary
+                            ? 'btn-brand'
+                            : 'btn-outline-brand' %>"
+                        href="<%= action.href %>"
+                    >
+                        <i
+                            class="bi <%= action.icon %> me-2"
+                            aria-hidden="true"
+                        ></i>
+
+                        <%= action.label %>
+                    </a>
+                <% }); %>
+            </div>
+
+            <a class="error-support-link" href="/">
+                <i
+                    class="bi bi-house-door me-1"
+                    aria-hidden="true"
+                ></i>
+                Voltar à página inicial
+            </a>
+        </div>
+    </div>
+</section>

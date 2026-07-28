@@ -1,6 +1,24 @@
-<div class="text-center py-5">
-    <h1 class="display-4 text-warning">401</h1>
-    <h3>Você precisa estar logado</h3>
-    <p class="text-muted">Faça login para acessar esta página.</p>
-    <a href="/login" class="btn btn-primary">Ir para o login</a>
-</div>
+<%- include('../partials/error-page', {
+    errorCode: '401',
+    errorIcon: 'bi-person-lock',
+    errorEyebrow: 'Autenticação necessária',
+    errorTitle: 'Você precisa entrar para continuar',
+    errorDescription:
+        'Esta área está disponível somente para usuários autenticados.',
+    errorSuggestion:
+        'Entre com sua conta ou faça um cadastro gratuito.',
+    actions: [
+        {
+            label: 'Entrar na conta',
+            href: '/login',
+            icon: 'bi-box-arrow-in-right',
+            primary: true
+        },
+        {
+            label: 'Criar uma conta',
+            href: '/register',
+            icon: 'bi-person-plus',
+            primary: false
+        }
+    ]
+}) %>

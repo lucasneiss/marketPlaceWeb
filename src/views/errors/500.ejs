@@ -1,6 +1,18 @@
-<div class="text-center py-5">
-    <h1 class="display-4 text-dark">500</h1>
-    <h3>Erro interno do servidor</h3>
-    <p class="text-muted">Algo deu errado. Tente novamente mais tarde.</p>
-    <a href="/lobby" class="btn btn-primary">Voltar ao início</a>
-</div>
+<%- include('../partials/error-page', {
+    errorCode: '500',
+    errorIcon: 'bi-tools',
+    errorEyebrow: 'Erro interno do servidor',
+    errorTitle: 'Não conseguimos concluir esta operação',
+    errorDescription:
+        'Ocorreu uma falha inesperada enquanto processávamos sua solicitação.',
+    errorSuggestion:
+        'Aguarde alguns instantes e tente novamente. Se o problema continuar, retorne à página inicial.',
+    actions: [
+        {
+            label: 'Ver catálogo',
+            href: '/catalog',
+            icon: 'bi-bag',
+            primary: false
+        }
+    ]
+}) %>

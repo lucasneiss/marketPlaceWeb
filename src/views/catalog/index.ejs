@@ -1,0 +1,267 @@
+<section class="catalog-heading mb-5">
+    <nav aria-label="Navegação estrutural">
+        <ol class="breadcrumb mb-3">
+            <li class="breadcrumb-item"><a href="/">Início</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Catálogo</li>
+        </ol>
+    </nav>
+
+    <div class="row align-items-end g-4">
+        <div class="col-12 col-lg-7">
+            <p class="section-eyebrow mb-2">Explore o Marketplace</p>
+            <h1 class="catalog-title mb-3">Catálogo de produtos</h1>
+            <p class="catalog-intro mb-0">
+                Compare produtos de diferentes vendedores usando busca, filtros,
+                ordenação e disponibilidade.
+            </p>
+        </div>
+
+        <div class="col-12 col-lg-5">
+            <form class="catalog-main-search" action="/catalog" method="GET" role="search">
+                <label class="visually-hidden" for="catalog-main-search">Buscar no catálogo</label>
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input
+                    class="form-control"
+                    id="catalog-main-search"
+                    type="search"
+                    name="q"
+                    value="<%= filters.q %>"
+                    placeholder="Digite um produto..."
+                >
+                <button class="btn btn-brand" type="submit">Buscar</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<div class="d-lg-none mb-3">
+    <button
+        class="btn catalog-filter-toggle w-100"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#catalogFilters"
+        aria-expanded="false"
+        aria-controls="catalogFilters"
+    >
+        <i class="bi bi-sliders me-2" aria-hidden="true"></i>
+        Mostrar filtros
+    </button>
+</div>
+
+<div class="row g-4 align-items-start">
+    <aside class="col-12 col-lg-3">
+        <div class="collapse d-lg-block" id="catalogFilters">
+            <form
+                class="catalog-filter-panel"
+                action="/catalog"
+                method="GET"
+                data-catalog-filter-form
+            >
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h2 class="catalog-filter-title mb-0">Filtros</h2>
+                    <a class="catalog-clear-link" href="/catalog">Limpar</a>
+                </div>
+
+                <div class="catalog-filter-group">
+                    <label class="form-label" for="filter-q">Busca</label>
+                    <input
+                        class="form-control"
+                        id="filter-q"
+                        type="search"
+                        name="q"
+                        value="<%= filters.q %>"
+                        placeholder="Nome ou descrição"
+                    >
+                </div>
+
+                <div class="catalog-filter-group">
+                    <label class="form-label" for="filter-category">Categoria</label>
+                    <select class="form-select" id="filter-category" name="category">
+                        <option value="">Todas as categorias</option>
+                        <% categories.forEach(function(category) { %>
+                            <option
+                                value="<%= category.slug %>"
+                                <%= filters.category === category.slug ? 'selected' : '' %>
+                            >
+                                <%= category.name %>
+                            </option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <div class="catalog-filter-group">
+                    <label class="form-label" for="filter-seller">Vendedor</label>
+                    <select class="form-select" id="filter-seller" name="seller">
+                        <option value="">Todos os vendedores</option>
+                        <% sellers.forEach(function(seller) { %>
+                            <option
+                                value="<%= seller.id %>"
+                                <%= String(filters.seller) === String(seller.id) ? 'selected' : '' %>
+                            >
+                                <%= seller.storeName %>
+                            </option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <fieldset class="catalog-filter-group" data-price-range>
+                    <legend class="form-label">Faixa de preço</legend>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="visually-hidden" for="filter-min-price">Preço mínimo</label>
+                            <input
+                                class="form-control"
+                                id="filter-min-price"
+                                type="number"
+                                name="minPrice"
+                                value="<%= filters.minPrice %>"
+                                min="0"
+                                step="0.01"
+                                placeholder="Mínimo"
+                            >
+                        </div>
+                        <div class="col-6">
+                            <label class="visually-hidden" for="filter-max-price">Preço máximo</label>
+                            <input
+                                class="form-control"
+                                id="filter-max-price"
+                                type="number"
+                                name="maxPrice"
+                                value="<%= filters.maxPrice %>"
+                                min="0"
+                                step="0.01"
+                                placeholder="Máximo"
+                            >
+                        </div>
+                    </div>
+                    <p class="catalog-field-error mb-0 mt-2" data-price-error hidden>
+                        O preço máximo deve ser maior ou igual ao mínimo.
+                    </p>
+                </fieldset>
+
+                <div class="catalog-filter-group">
+                    <label class="form-label" for="filter-availability">Disponibilidade</label>
+                    <select class="form-select" id="filter-availability" name="availability">
+                        <option value="">Todos</option>
+                        <option value="available" <%= filters.availability === 'available' ? 'selected' : '' %>>
+                            Em estoque
+                        </option>
+                        <option value="unavailable" <%= filters.availability === 'unavailable' ? 'selected' : '' %>>
+                            Indisponíveis
+                        </option>
+                    </select>
+                </div>
+
+                <div class="catalog-filter-group">
+                    <label class="form-label" for="filter-sort">Ordenar por</label>
+                    <select class="form-select" id="filter-sort" name="sort" data-catalog-sort>
+                        <option value="newest" <%= filters.sort === 'newest' ? 'selected' : '' %>>
+                            Mais recentes
+                        </option>
+                        <option value="price-asc" <%= filters.sort === 'price-asc' ? 'selected' : '' %>>
+                            Menor preço
+                        </option>
+                        <option value="price-desc" <%= filters.sort === 'price-desc' ? 'selected' : '' %>>
+                            Maior preço
+                        </option>
+                        <option value="name-asc" <%= filters.sort === 'name-asc' ? 'selected' : '' %>>
+                            Nome: A-Z
+                        </option>
+                        <option value="name-desc" <%= filters.sort === 'name-desc' ? 'selected' : '' %>>
+                            Nome: Z-A
+                        </option>
+                    </select>
+                </div>
+
+                <button class="btn btn-brand w-100" type="submit" data-filter-submit>
+                    Aplicar filtros
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <section class="col-12 col-lg-9" aria-labelledby="catalog-results-title">
+        <div class="catalog-results-toolbar">
+            <div>
+                <h2 class="catalog-results-title mb-1" id="catalog-results-title">
+                    <%= resultCount === 1 ? '1 produto encontrado' : resultCount + ' produtos encontrados' %>
+                </h2>
+                <% if (resultCount > 0) { %>
+                    <p class="catalog-results-range mb-0">
+                        Exibindo <%= pagination.startItem %>-<%= pagination.endItem %>
+                        de <%= resultCount %>
+                    </p>
+                <% } %>
+            </div>
+        </div>
+
+        <% if (activeFilters.length) { %>
+            <div class="catalog-active-filters" aria-label="Filtros ativos">
+                <% activeFilters.forEach(function(filter) { %>
+                    <a class="catalog-filter-chip" href="<%= filter.url %>">
+                        <%= filter.label %>
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </a>
+                <% }); %>
+                <a class="catalog-filter-chip clear-all" href="/catalog">Limpar todos</a>
+            </div>
+        <% } %>
+
+        <% if (products.length) { %>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-4">
+                <% products.forEach(function(product) { %>
+                    <%- include('../partials/catalog-product-card', { product: product }) %>
+                <% }); %>
+            </div>
+
+            <% if (pagination.totalPages > 1) { %>
+                <nav class="catalog-pagination mt-5" aria-label="Paginação do catálogo">
+                    <ul class="pagination justify-content-center mb-0">
+                        <li class="page-item <%= pagination.previousUrl ? '' : 'disabled' %>">
+                            <a
+                                class="page-link"
+                                href="<%= pagination.previousUrl || '#' %>"
+                                aria-label="Página anterior"
+                                <%= pagination.previousUrl ? '' : 'aria-disabled="true" tabindex="-1"' %>
+                            >
+                                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                            </a>
+                        </li>
+
+                        <% pagination.pages.forEach(function(page) { %>
+                            <li class="page-item <%= page.active ? 'active' : '' %>">
+                                <a
+                                    class="page-link"
+                                    href="<%= page.url %>"
+                                    <%= page.active ? 'aria-current="page"' : '' %>
+                                >
+                                    <%= page.number %>
+                                </a>
+                            </li>
+                        <% }); %>
+
+                        <li class="page-item <%= pagination.nextUrl ? '' : 'disabled' %>">
+                            <a
+                                class="page-link"
+                                href="<%= pagination.nextUrl || '#' %>"
+                                aria-label="Próxima página"
+                                <%= pagination.nextUrl ? '' : 'aria-disabled="true" tabindex="-1"' %>
+                            >
+                                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            <% } %>
+        <% } else { %>
+            <div class="catalog-empty-state text-center">
+                <span class="catalog-empty-icon">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                </span>
+                <h2>Nenhum produto encontrado</h2>
+                <p>Altere os filtros ou limpe a busca para visualizar outras opções.</p>
+                <a class="btn btn-brand" href="/catalog">Limpar filtros</a>
+            </div>
+        <% } %>
+    </section>
+</div>

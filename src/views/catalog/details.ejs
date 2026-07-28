@@ -1,0 +1,133 @@
+<nav aria-label="Navegação estrutural">
+    <ol class="breadcrumb product-breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/">Início</a></li>
+        <li class="breadcrumb-item"><a href="/catalog">Catálogo</a></li>
+        <li class="breadcrumb-item">
+            <a href="/catalog?category=<%= encodeURIComponent(product.category.slug) %>">
+                <%= product.category.name %>
+            </a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page"><%= product.name %></li>
+    </ol>
+</nav>
+
+<article class="product-detail-card">
+    <div class="row g-0">
+        <div class="col-12 col-lg-6">
+            <div
+                class="product-detail-image <%= product.imageClass %> <%= product.positionClass %>"
+                role="img"
+                aria-label="Imagem demonstrativa de <%= product.name %>"
+            >
+                <% if (product.discountLabel) { %>
+                    <span class="product-detail-discount"><%= product.discountLabel %></span>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="product-detail-content">
+                <a
+                    class="product-detail-category"
+                    href="/catalog?category=<%= encodeURIComponent(product.category.slug) %>"
+                >
+                    <%= product.category.name %>
+                </a>
+
+                <h1 class="product-detail-title"><%= product.name %></h1>
+
+                <div class="product-detail-meta">
+                    <span class="catalog-rating">
+                        <i class="bi bi-star-fill" aria-hidden="true"></i>
+                        <%= Number(product.rating).toFixed(1).replace('.', ',') %>
+                        <small>(<%= product.reviewCount %> avaliações)</small>
+                    </span>
+                    <span class="product-condition">
+                        <i class="bi bi-box-seam" aria-hidden="true"></i>
+                        <%= product.conditionLabel %>
+                    </span>
+                </div>
+
+                <p class="product-detail-description"><%= product.description %></p>
+
+                <div class="product-detail-pricing">
+                    <% if (product.formattedOldPrice) { %>
+                        <span class="product-detail-old-price"><%= product.formattedOldPrice %></span>
+                    <% } %>
+                    <strong><%= product.formattedPrice %></strong>
+                    <span>em até 10x sem juros</span>
+                </div>
+
+                <div class="product-stock <%= product.isAvailable ? 'is-available' : 'is-unavailable' %>">
+                    <i
+                        class="bi <%= product.isAvailable ? 'bi-check-circle-fill' : 'bi-x-circle-fill' %>"
+                        aria-hidden="true"
+                    ></i>
+                    <%= product.availabilityLabel %>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <% if (product.isAvailable) { %>
+                        <% if (typeof username !== 'undefined' && username) { %>
+                            <button
+                                class="btn btn-brand btn-lg"
+                                type="button"
+                                disabled
+                                title="O carrinho será implementado na próxima etapa"
+                            >
+                                <i class="bi bi-cart3 me-2" aria-hidden="true"></i>
+                                Carrinho na próxima etapa
+                            </button>
+                        <% } else { %>
+                            <a class="btn btn-brand btn-lg" href="/login">
+                                <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>
+                                Entrar para comprar
+                            </a>
+                        <% } %>
+                    <% } else { %>
+                        <button class="btn btn-secondary btn-lg" type="button" disabled>
+                            Produto indisponível
+                        </button>
+                    <% } %>
+                    <a class="btn btn-outline-brand" href="/catalog">
+                        Continuar explorando
+                    </a>
+                </div>
+
+                <div class="product-purchase-note">
+                    <i class="bi bi-shield-check" aria-hidden="true"></i>
+                    Compra protegida e informações validadas pelo servidor.
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+
+<section class="seller-public-card mt-4" aria-labelledby="seller-title">
+    <span class="seller-public-icon">
+        <i class="bi bi-shop" aria-hidden="true"></i>
+    </span>
+    <div>
+        <p class="section-eyebrow mb-1">Vendido por</p>
+        <h2 id="seller-title"><%= product.seller.storeName %></h2>
+        <p class="mb-0"><%= product.seller.description %></p>
+    </div>
+</section>
+
+<section class="related-products-section" aria-labelledby="related-title">
+    <div class="d-flex align-items-end justify-content-between gap-3 mb-4">
+        <div>
+            <p class="section-eyebrow mb-2">Continue explorando</p>
+            <h2 class="section-title mb-0" id="related-title">Produtos relacionados</h2>
+        </div>
+        <a class="section-link" href="/catalog?category=<%= encodeURIComponent(product.category.slug) %>">
+            Ver categoria <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4">
+        <% relatedProducts.forEach(function(relatedProduct) { %>
+            <%- include('../partials/catalog-product-card', { product: relatedProduct }) %>
+        <% }); %>
+    </div>
+</section>

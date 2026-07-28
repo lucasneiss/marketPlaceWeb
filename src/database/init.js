@@ -4,7 +4,14 @@ const { sequelize, models, connectDatabase } = require('./index');
 const { seedDatabase } = require('./seed');
 
 async function main() {
-  await fs.mkdir(path.resolve(__dirname, '../../data'), { recursive: true });
+  if (process.env.DB_FORCE_RESET === 'true') {
+      await sequelize.query('PRAGMA foreign_keys = OFF');
+      await sequelize.sync({ force: true });
+      await sequelize.query('PRAGMA foreign_keys = ON');
+  } else {
+      await sequelize.sync();
+  }
+  
   await connectDatabase();
 
   // DB_FORCE_RESET=true é destinado somente ao desenvolvimento local.

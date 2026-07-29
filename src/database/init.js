@@ -1,10 +1,12 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
+
 const {
     sequelize,
     models,
     connectDatabase,
 } = require('./index');
+
 const { seedDatabase } = require('./seed');
 
 async function main() {
@@ -19,6 +21,8 @@ async function main() {
 
     await connectDatabase();
 
+    // A reinicialização completa é destinada somente
+    // ao desenvolvimento local.
     const shouldReset =
         process.argv.includes('--force')
         || process.env.DB_FORCE_RESET === 'true';
@@ -32,13 +36,21 @@ async function main() {
     );
 
     console.log(
-        'Banco inicializado e dados de demonstração criados.',
+        shouldReset
+            ? 'Banco reinicializado e dados de demonstração criados.'
+            : 'Banco inicializado e dados de demonstração criados.',
     );
 }
 
 main()
     .catch((error) => {
-        console.error(error);
+        console.error(
+            'Não foi possível inicializar o banco de dados:',
+            error,
+        );
+
         process.exitCode = 1;
     })
-    .finally(() => sequelize.close());
+    .finally(async () => {
+        await sequelize.close();
+    });

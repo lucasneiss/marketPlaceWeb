@@ -1,13 +1,51 @@
+const homeData = require('../data/homeData')
+
 const { sequelize, models } = require('../database');
 
 const { User, Role, SellerProfile } = models;
 
 class AuthController {
     static home(req, res) {
-        if (req.session && req.session.userId) {
-            return res.redirect('/lobby');
-        }
-        res.redirect('/login');
+        const searchTerm =
+            typeof req.query.q === 'string'
+                ? req.query.q.trim()
+                : '';
+
+        const normalizeText = (value) => String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLocaleLowerCase('pt-BR');
+
+        const normalizedSearch = normalizeText(searchTerm);
+
+        const filterProducts = (products) => {
+            if (!normalizedSearch) return products;
+
+            return products.filter((product) => {
+                const searchableText = [
+                    product.name,
+                    product.category,
+                    product.searchTerms
+                ].join(' ');
+
+                return normalizeText(searchableText)
+                    .includes(normalizedSearch);
+            });
+        };
+
+        res.renderComLayout('home', {
+            titulo: 'Marketplace | Compre e venda com confiança',
+            pagina: 'home',
+            searchTerm,
+            categories: homeData.categories,
+            heroCategories: homeData.heroCategories,
+            featuredProducts: filterProducts(
+                homeData.featuredProducts
+            ),
+            bestSellers: filterProducts(
+                homeData.bestSellers
+            )
+        });
     }
 
     static showLogin(req, res) {

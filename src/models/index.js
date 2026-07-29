@@ -3,6 +3,7 @@ const defineRole = require('./Role');
 const defineUserRole = require('./UserRole');
 const defineAddress = require('./Address');
 const defineSellerProfile = require('./SellerProfile');
+const defineCategory = require('./Category');
 const defineProduct = require('./Product');
 const defineNotification = require('./Notification');
 
@@ -12,6 +13,7 @@ module.exports = (sequelize) => {
   const UserRole = defineUserRole(sequelize);
   const Address = defineAddress(sequelize);
   const SellerProfile = defineSellerProfile(sequelize);
+  const Category = defineCategory(sequelize);
   const Product = defineProduct(sequelize);
   const Notification = defineNotification(sequelize);
 
@@ -55,11 +57,30 @@ module.exports = (sequelize) => {
     foreignKey: 'sellerId',
   });
 
+  Category.hasMany(Product, {
+    as: 'products',
+    foreignKey: 'categoryId',
+    onDelete: 'RESTRICT',
+  });
+  Product.belongsTo(Category, {
+    as: 'category',
+    foreignKey: 'categoryId',
+  });
+
   UserRole.belongsTo(User, {
     as: 'assigner',
     foreignKey: 'assignedBy',
     onDelete: 'SET NULL',
   });
 
-  return { User, Role, UserRole, Address, SellerProfile, Product, Notification  };
+  return {
+    User,
+    Role,
+    UserRole,
+    Address,
+    SellerProfile,
+    Category,
+    Product,
+    Notification,
+  };
 };

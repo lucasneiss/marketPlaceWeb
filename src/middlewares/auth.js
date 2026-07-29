@@ -2,7 +2,14 @@ function requireAuth(req, res, next) {
     if (req.session && req.session.userId) {
         return next(); // deixa passar
     }
-    return res.status(401).render('errors/401');
+    res.status(401);
+    return res.renderComLayout(
+        'errors/401',
+        {
+            titulo: 'Autenticação necessária | Marketplace',
+            pagina: 'error',
+        },
+    );
 }
 
 function requireRole(...rolesPermitidos) {
@@ -16,11 +23,18 @@ function requireRole(...rolesPermitidos) {
         const cargosDoUsuario = user.roles.map(r => r.code);
         const temPermissao = rolesPermitidos.some(r => cargosDoUsuario.includes(r));
 
-        if (temPermissao) {
-            return next();
+        if (!temPermissao) {
+            res.status(403);
+
+            return res.renderComLayout(
+                'errors/403',
+                {
+                    titulo: 'Acesso negado | Marketplace',
+                    pagina: 'error',
+                },
+            );
         }
-        return res.status(403).render('errors/403');
-    };
+    }
 }
 
 module.exports = { requireAuth, requireRole };

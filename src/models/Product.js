@@ -16,9 +16,18 @@ module.exports = (sequelize) => {
                 allowNull: false,
                 field: 'seller_id',
             },
+            categoryId: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                field: 'category_id',
+            },
             name: {
                 type: DataTypes.STRING(120),
                 allowNull: false,
+                validate: {
+                    notEmpty: true,
+                    len: [2, 120],
+                },
             },
             slug: {
                 type: DataTypes.STRING(120),
@@ -28,23 +37,86 @@ module.exports = (sequelize) => {
             },
             description: {
                 type: DataTypes.TEXT,
-                allowNull: true,
+                allowNull: false,
+                validate: {
+                    notEmpty: true,
+                },
             },
-            logoUrl: {
-                type: DataTypes.STRING(500),
+            price: {
+                type: DataTypes.DECIMAL(10, 2),
+                allowNull: false,
+                validate: {
+                    min: 0,
+                },
+            },
+            oldPrice: {
+                type: DataTypes.DECIMAL(10, 2),
                 allowNull: true,
-                field: 'logo_url',
-                validate: { isUrl: true },
+                field: 'old_price',
+                validate: {
+                    min: 0,
+                },
+            },
+            discountPercent: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+                field: 'discount_percent',
+                validate: {
+                    min: 0,
+                    max: 100,
+                },
+            },
+            imageUrl: {
+                type: DataTypes.STRING(500),
+                allowNull: false,
+                field: 'image_url',
+            },
+            imagePosition: {
+                type: DataTypes.ENUM(
+                    'top-left',
+                    'top-right',
+                    'bottom-left',
+                    'bottom-right',
+                ),
+                allowNull: false,
+                defaultValue: 'top-left',
+                field: 'image_position',
             },
             state: {
                 type: DataTypes.ENUM('UNKNOWN', 'GOOD', 'MEDIUM', 'BAD'),
                 allowNull: false,
-                defaultValue: 'UNKNOWN',
+                defaultValue: 'GOOD',
             },
             quantity: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 defaultValue: 0,
+                validate: {
+                    min: 0,
+                },
+            },
+            status: {
+                type: DataTypes.ENUM('ACTIVE', 'INACTIVE'),
+                allowNull: false,
+                defaultValue: 'ACTIVE',
+            },
+            rating: {
+                type: DataTypes.DECIMAL(2, 1),
+                allowNull: false,
+                defaultValue: 0,
+                validate: {
+                    min: 0,
+                    max: 5,
+                },
+            },
+            reviewCount: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+                field: 'review_count',
+                validate: {
+                    min: 0,
+                },
             },
             loggedAt: {
                 type: DataTypes.DATE,
@@ -58,7 +130,12 @@ module.exports = (sequelize) => {
             tableName: 'products',
             indexes: [
                 { fields: ['seller_id'] },
-                { fields: ['state'] }
+                { fields: ['category_id'] },
+                { fields: ['state'] },
+                { fields: ['status'] },
+                { fields: ['price'] },
+                { fields: ['quantity'] },
+                { fields: ['created_at'] },
             ],
             hooks: {
                 beforeValidate: (product) => {

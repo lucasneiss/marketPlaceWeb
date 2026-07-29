@@ -4,10 +4,6 @@
   "private": true,
   "description": "Estrutura inicial do banco de dados do marketplace DAW",
   "main": "src/database/index.js",
-  "scripts": {
-    "db:init": "node src/database/init.js",
-    "db:check": "node src/database/check.js"
-  },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
@@ -21,5 +17,13 @@
   },
   "overrides": {
     "uuid": "^11.1.1"
-  }
+  },
+  "scripts": {
+    "start": "node app.js",
+    "db:init": "node src/database/init.js",
+    "db:reset": "node src/database/init.js --force",
+    "db:check": "node src/database/check.js"
 }
+}
+
+

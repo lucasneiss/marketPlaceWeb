@@ -1,22 +1,13 @@
 <div class="auth-box">
-    <h2>Acessar sua Conta</h2>
-    <p>Entre para gerenciar seus produtos ou realizar compras.</p>
-
+    <h1 class="h2">Acessar sua conta</h1>
+    <p>Entre para comprar, vender ou administrar a plataforma.</p>
+    <% if (erro) { %><div class="alert alert-danger"><%= erro %></div><% } %>
+    <% if (typeof query !== 'undefined' && query.registered) { %><div class="alert alert-success">Cadastro realizado. Agora faça login.</div><% } %>
     <form action="/login" method="POST">
-        <div class="form-group">
-            <label for="email">E-mail</label>
-            <input type="email" id="email" name="email" placeholder="exemplo@email.com" required>
-        </div>
-
-        <div class="form-group">
-            <label for="password">Senha</label>
-            <input type="password" id="password" name="password" placeholder="Sua senha secreta" required>
-        </div>
-
-        <button type="submit" class="btn-primary">Entrar</button>
+        <div class="form-group"><label for="email">E-mail</label><input type="email" id="email" name="email" placeholder="exemplo@email.com" required></div>
+        <div class="form-group"><label for="password">Senha</label><input type="password" id="password" name="password" required></div>
+        <button type="submit" class="btn btn-brand w-100">Entrar</button>
     </form>
-
-    <p class="auth-footer">
-        Ainda não tem uma conta? <a href="/register">Cadastre-se aqui</a>.
-    </p>
+    <p class="auth-footer">Ainda não tem uma conta? <a href="/register">Cadastre-se.</a></p>
+    <hr><p class="small text-muted mb-0">Contas demo após <code>npm run db:reset</code>: cliente@marketplace.local, vendedor@marketplace.local e admin@marketplace.local. Senha: Marketplace@123</p>
 </div>

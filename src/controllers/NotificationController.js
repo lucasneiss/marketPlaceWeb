@@ -8,23 +8,35 @@ class NotificationController {
                 where: { userId: req.session.userId },
                 order: [['createdAt', 'DESC']],
             });
-            res.renderComLayout('notifications', { titulo: 'Notificações', notifications });
+            return res.renderComLayout('notifications', {
+                titulo: 'Notificações', pagina: 'notifications', notifications,
+            });
         } catch (error) {
-            next(error);
+            return next(error);
         }
     }
 
     static async markAsRead(req, res, next) {
         try {
-            const notification = await Notification.findByPk(req.params.id);
-            if (!notification || notification.userId !== req.session.userId) {
-                return res.status(403).render('errors/403');
-            }
+            const notification = await Notification.findOne({
+                where: { id: req.params.id, userId: req.session.userId },
+            });
+            if (!notification) return res.status(404).json({ ok: false, message: 'Notificação não encontrada.' });
             notification.read = true;
             await notification.save();
-            res.redirect('/notifications');
+            if (req.accepts(['json', 'html']) === 'json' || req.xhr) return res.json({ ok: true });
+            return res.redirect('/notifications');
         } catch (error) {
-            next(error);
+            return next(error);
+        }
+    }
+
+    static async markAllAsRead(req, res, next) {
+        try {
+            await Notification.update({ read: true }, { where: { userId: req.session.userId, read: false } });
+            return res.json({ ok: true });
+        } catch (error) {
+            return next(error);
         }
     }
 }

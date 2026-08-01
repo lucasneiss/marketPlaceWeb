@@ -2,11 +2,10 @@
   "name": "trabalho-daw-marketplace",
   "version": "1.0.0",
   "private": true,
-  "description": "Estrutura inicial do banco de dados do marketplace DAW",
-  "main": "src/database/index.js",
+  "description": "Marketplace multiusuário acadêmico com Node.js, EJS, Sequelize, SQLite, jQuery e Socket.IO",
+  "main": "app.js",
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "bcryptjs": "^3.0.2",
     "ejs": "^6.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
@@ -22,8 +21,11 @@
     "start": "node app.js",
     "db:init": "node src/database/init.js",
     "db:reset": "node src/database/init.js --force",
-    "db:check": "node src/database/check.js"
+    "db:check": "node src/database/check.js",
+    "dev": "node --watch app.js",
+    "check": "node scripts/static-check.js"
+  },
+  "engines": {
+    "node": ">=20.17.0"
+  }
 }
-}
-
-

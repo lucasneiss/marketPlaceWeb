@@ -1,3 +1,4 @@
+require('../config/loadEnv');
 const path = require('node:path');
 const { Sequelize } = require('sequelize');
 

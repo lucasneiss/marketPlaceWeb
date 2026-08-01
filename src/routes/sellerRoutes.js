@@ -1,0 +1,23 @@
+const express = require('express');
+const SellerController = require('../controllers/SellerController');
+const { requireRole, requireApprovedSeller } = require('../middlewares/auth');
+
+const router = express.Router();
+const sellerOnly = requireRole('SELLER');
+const approvedSellerOnly = [sellerOnly, requireApprovedSeller];
+router.get('/seller', sellerOnly, SellerController.dashboard);
+router.get('/seller/profile', sellerOnly, SellerController.showProfile);
+router.post('/seller/profile', sellerOnly, SellerController.updateProfile);
+router.get('/seller/products', approvedSellerOnly, SellerController.products);
+router.get('/seller/products/new', approvedSellerOnly, SellerController.newProduct);
+router.post('/seller/products', approvedSellerOnly, SellerController.createProduct);
+router.get('/seller/products/:id/edit', approvedSellerOnly, SellerController.editProduct);
+router.post('/seller/products/:id', approvedSellerOnly, SellerController.updateProduct);
+router.patch('/seller/products/:id/stock', approvedSellerOnly, SellerController.updateStock);
+router.post('/seller/products/:id/toggle', approvedSellerOnly, SellerController.toggleProduct);
+router.post('/seller/products/:id/delete', approvedSellerOnly, SellerController.deleteProduct);
+router.get('/seller/orders', approvedSellerOnly, SellerController.orders);
+router.get('/seller/orders/:id', approvedSellerOnly, SellerController.orderDetails);
+router.patch('/seller/orders/:id/status', approvedSellerOnly, SellerController.updateOrderStatus);
+router.get('/seller/reviews', approvedSellerOnly, SellerController.reviews);
+module.exports = router;

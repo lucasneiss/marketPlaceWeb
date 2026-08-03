@@ -3,7 +3,7 @@ INTEGRANTES E LOGINS DO GITHUB
 Preencher antes de gerar o historico_commits.txt:
 
 Rafael Valdivio — rafael-valdivio
-Nome completo — @login
+Gustavo Bragança Santos — GustavoBrast
 Nome completo — @login
 Nome completo — @login
 Nome completo — @login

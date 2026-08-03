@@ -1,224 +1,291 @@
 const { Op } = require('sequelize');
 const homeData = require('../data/homeData');
+
 const { sequelize, models } = require('../database');
-const { productToView } = require('../utils/view');
 
-const { User, Role, SellerProfile, Product, Category, Cart } = models;
+const {
+    User,
+    Role,
+    SellerProfile,
+    Product,
+    Category,
+} = models;
 
-const CATEGORY_ICONS = {
-    eletronicos: 'bi-phone', roupas: 'bi-bag', calcados: 'bi-stars',
-    acessorios: 'bi-watch', moveis: 'bi-lamp', livros: 'bi-book', beleza: 'bi-heart',
+const IMAGE_CLASSES = {
+    '/images/hero-categories.webp': 'hero-sprite',
+    '/images/featured-products.webp': 'featured-sprite',
+    '/images/best-sellers.webp': 'best-sellers-sprite',
 };
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    }).format(Number(value));
+}
+
+function formatHomeProduct(product) {
+    return {
+        id: product.slug,
+        name: product.name,
+        category: product.category?.name || '',
+        sellerName: product.seller?.storeName || '',
+        detailsUrl: `/products/${product.slug}`,
+        price: formatCurrency(product.price),
+        oldPrice: product.oldPrice ? formatCurrency(product.oldPrice) : null,
+        discount: product.discountPercent
+            ? `-${product.discountPercent}%`
+            : null,
+        rating: Number(product.rating).toFixed(1).replace('.', ','),
+        reviews: product.reviewCount,
+        installments: 'em até 10x sem juros',
+        spriteClass: IMAGE_CLASSES[product.imageUrl] || 'featured-sprite',
+        positionClass: `sprite-${product.imagePosition}`,
+        searchTerms: [
+            product.name,
+            product.category?.name,
+            product.seller?.storeName,
+            product.seller?.description,
+            product.description,
+        ]
+            .filter(Boolean)
+            .join(' '),
+    };
+}
 
 class AuthController {
     static async home(req, res, next) {
+        const searchTerm =
+            typeof req.query.q === 'string'
+                ? req.query.q.trim()
+                : '';
+
+        const normalizeText = (value) => String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLocaleLowerCase('pt-BR');
+
+        const normalizedSearch = normalizeText(searchTerm);
+
         try {
-            const searchTerm = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 100) : '';
-            const where = { status: 'ACTIVE' };
-            if (searchTerm) {
+            const where = {
+                status: 'ACTIVE',
+            };
+
+            if (normalizedSearch) {
                 where[Op.or] = [
-                    { name: { [Op.like]: `%${searchTerm}%` } },
-                    { description: { [Op.like]: `%${searchTerm}%` } },
+                    {
+                        name: {
+                            [Op.like]: `%${searchTerm}%`,
+                        },
+                    },
+                    {
+                        description: {
+                            [Op.like]: `%${searchTerm}%`,
+                        },
+                    },
                 ];
             }
 
-            const include = [
-                { model: Category, as: 'category', attributes: ['id', 'name', 'slug'] },
+            const includes = [
+                {
+                    model: Category,
+                    as: 'category',
+                    attributes: ['id', 'name', 'slug'],
+                },
                 {
                     model: SellerProfile,
                     as: 'seller',
                     attributes: ['id', 'storeName', 'slug', 'description'],
+                    required: true,
                     where: { status: 'APPROVED' },
                 },
             ];
 
-            const [categories, featuredRows, popularRows, productCount, sellerCount] = await Promise.all([
-                Category.findAll({ order: [['name', 'ASC']] }),
-                Product.findAll({ where, include, order: [['createdAt', 'DESC']], limit: 8 }),
-                Product.findAll({ where, include, order: [['reviewCount', 'DESC'], ['rating', 'DESC']], limit: 8 }),
-                Product.count({ where: { status: 'ACTIVE' } }),
-                SellerProfile.count({ where: { status: 'APPROVED' } }),
+            const [featuredRows, bestSellerRows] = await Promise.all([
+                Product.findAll({
+                    where,
+                    include: includes,
+                    order: [
+                        ['rating', 'DESC'],
+                        ['createdAt', 'DESC'],
+                    ],
+                    limit: 4,
+                }),
+                Product.findAll({
+                    where,
+                    include: includes,
+                    order: [
+                        ['reviewCount', 'DESC'],
+                        ['rating', 'DESC'],
+                    ],
+                    limit: 4,
+                }),
             ]);
 
-            return res.renderComLayout('home', {
+            const featuredProducts = featuredRows.map(formatHomeProduct);
+            const bestSellers = bestSellerRows.map(formatHomeProduct);
+
+            res.renderComLayout('home', {
                 titulo: 'Marketplace | Compre e venda com confiança',
                 pagina: 'home',
                 searchTerm,
+                categories: homeData.categories,
                 heroCategories: homeData.heroCategories,
-                categories: categories.map((category) => ({
-                    ...category.get({ plain: true }),
-                    icon: CATEGORY_ICONS[category.slug] || 'bi-grid',
-                })),
-                featuredProducts: featuredRows.map(productToView),
-                bestSellers: popularRows.map(productToView),
-                stats: { productCount, sellerCount },
+                featuredProducts,
+                bestSellers,
             });
         } catch (error) {
-            return next(error);
+            next(error);
         }
     }
 
     static showLogin(req, res) {
-        if (req.currentUser) return res.redirect('/lobby');
-        return res.renderComLayout('login', { titulo: 'Entrar no Marketplace', erro: null });
+        res.renderComLayout('login', { titulo: 'Entrar no Marketplace' });
     }
 
     static showRegister(req, res) {
-        if (req.currentUser) return res.redirect('/lobby');
-        return res.renderComLayout('register', { titulo: 'Criar uma Conta', erro: null, values: {} });
+        res.renderComLayout('register', { titulo: 'Criar uma Conta' });
     }
 
+    // (POST /register)
     static async register(req, res, next) {
-        const name = String(req.body.name || '').trim();
-        const email = String(req.body.email || '').trim().toLowerCase();
-        const password = String(req.body.password || '');
-        const roleCode = ['CLIENT', 'SELLER'].includes(req.body.role) ? req.body.role : null;
-        const storeName = String(req.body.storeName || '').trim();
-        const description = String(req.body.description || '').trim();
+        const { name, email, password, role, storeName, description } = req.body;
 
-        if (!name || !email || password.length < 6 || !roleCode || (roleCode === 'SELLER' && !storeName)) {
-            return res.status(400).renderComLayout('register', {
-                titulo: 'Criar uma Conta',
-                erro: 'Preencha corretamente todos os campos obrigatórios.',
-                values: { name, email, role: roleCode, storeName, description },
-            });
-        }
+        const transaction = await sequelize.transaction();
 
         try {
-            const existingUser = await User.findOne({ where: { email } });
+            const existingUser = await User.findOne({ where: { email }, transaction });
             if (existingUser) {
-                return res.status(409).renderComLayout('register', {
-                    titulo: 'Criar uma Conta',
-                    erro: 'Este e-mail já está em uso.',
-                    values: { name, email, role: roleCode, storeName, description },
-                });
+                await transaction.rollback();
+                return res.send(`
+                    <script>
+                        alert("Este e-mail já está em uso! Por favor, utilize outro.");
+                        window.location.href = "/register"; 
+                    </script>
+                `);
             }
 
-            await sequelize.transaction(async (transaction) => {
-                const role = await Role.findOne({ where: { code: roleCode }, transaction });
-                if (!role) throw new Error('Perfis de usuário ainda não foram inicializados. Execute npm run db:reset.');
+            const user = await User.create({
+                name,
+                email,
+                passwordHash: password
+            }, { transaction });
 
-                const user = await User.create({ name, email, passwordHash: password }, { transaction });
-                await user.addRole(role, { through: { assignedAt: new Date() }, transaction });
-                await Cart.create({ userId: user.id }, { transaction });
+            const assignedRole = await Role.findOne({ where: { code: role }, transaction });
+            if (!assignedRole) {
+                throw new Error('Cargo solicitado inválido no sistema.');
+            }
 
-                if (roleCode === 'SELLER') {
-                    await SellerProfile.create({
-                        userId: user.id,
-                        storeName,
-                        description,
-                        status: 'PENDING',
-                    }, { transaction });
-                }
+            await user.addRole(assignedRole, {
+                through: { assignedAt: new Date() },
+                transaction
             });
 
-            return res.redirect('/login?registered=1');
+            if (role === 'SELLER') {
+                await SellerProfile.create({
+                    userId: user.id,
+                    storeName,
+                    description,
+                    status: 'PENDING'
+                }, { transaction });
+            }
+
+            await transaction.commit();
+
+            res.redirect('/login');
+
         } catch (error) {
-            return next(error);
+            await transaction.rollback();
+            console.error('Erro no registro de usuário:', error);
+            next(error);
         }
     }
-
     static async login(req, res, next) {
-        const email = String(req.body.email || '').trim().toLowerCase();
-        const password = String(req.body.password || '');
+        const { email, password } = req.body;
 
         try {
-            const user = await User.scope('withPassword').findOne({
-                where: { email },
-                include: [{ model: Role, as: 'roles', through: { attributes: [] } }],
-            });
+            const user = await User.scope('withPassword').findOne({ where: { email } });
 
-            if (!user || !(await user.checkPassword(password))) {
-                return res.status(401).renderComLayout('login', {
-                    titulo: 'Entrar no Marketplace',
-                    erro: 'E-mail ou senha inválidos.',
-                });
+            if (!user) {
+                return res.send(`<script>alert("E-mail ou senha inválidos."); window.location.href="/login";</script>`);
             }
 
-            if (user.status === 'BLOCKED') {
-                return res.status(403).renderComLayout('login', {
-                    titulo: 'Entrar no Marketplace',
-                    erro: 'Esta conta está bloqueada. Procure a administração.',
-                });
+            const senhaCorreta = await user.checkPassword(password);
+            if (!senhaCorreta) {
+                return res.send(`<script>alert("E-mail ou senha inválidos."); window.location.href="/login";</script>`);
             }
 
-            user.lastLoginAt = new Date();
-            await user.save({ hooks: false });
             req.session.userId = user.id;
             req.session.username = user.name;
 
-            return req.session.save(() => res.redirect('/lobby'));
+            res.redirect('/lobby');
         } catch (error) {
-            return next(error);
+            next(error);
         }
     }
 
     static showLobby(req, res) {
-        return res.renderComLayout('lobby', { titulo: 'Minha área' });
+        res.renderComLayout('lobby', { titulo: 'Início' });
     }
 
     static logout(req, res) {
-        req.session.destroy(() => res.redirect('/'));
+        req.session.destroy(() => {
+            res.redirect('/login');
+        });
     }
 
     static async showProfile(req, res, next) {
         try {
             const user = await User.findByPk(req.session.userId);
-            return res.renderComLayout('profile', { titulo: 'Meu perfil', user, erro: null });
+            res.renderComLayout('profile', { titulo: 'Meu perfil', user });
         } catch (error) {
-            return next(error);
+            next(error);
         }
     }
 
     static async updateProfile(req, res, next) {
-        const name = String(req.body.name || '').trim();
-        const email = String(req.body.email || '').trim().toLowerCase();
+        const { name, email } = req.body;
+
         try {
             const user = await User.findByPk(req.session.userId);
+
             user.name = name;
             user.email = email;
             await user.save();
+
             req.session.username = user.name;
-            return res.redirect('/profile?updated=1');
+
+            res.redirect('/profile');
         } catch (error) {
-            if (error.name === 'SequelizeUniqueConstraintError') {
-                const user = await User.findByPk(req.session.userId);
-                return res.status(409).renderComLayout('profile', {
-                    titulo: 'Meu perfil', user, erro: 'Este e-mail já está em uso.',
-                });
-            }
-            return next(error);
+            next(error);
         }
     }
-
     static showChangePassword(req, res) {
-        return res.renderComLayout('change-password', { titulo: 'Trocar senha', erro: null });
+        res.renderComLayout('change-password', { titulo: 'Trocar senha' });
     }
 
     static async changePassword(req, res, next) {
         const { currentPassword, newPassword, confirmPassword } = req.body;
+
         try {
             const user = await User.scope('withPassword').findByPk(req.session.userId);
-            if (!(await user.checkPassword(String(currentPassword || '')))) {
-                return res.status(400).renderComLayout('change-password', {
-                    titulo: 'Trocar senha', erro: 'A senha atual está incorreta.',
-                });
+
+            const senhaAtualCorreta = await user.checkPassword(currentPassword);
+            if (!senhaAtualCorreta) {
+                return res.send(`<script>alert("Senha atual incorreta."); window.location.href="/change-password";</script>`);
             }
-            if (String(newPassword || '').length < 6) {
-                return res.status(400).renderComLayout('change-password', {
-                    titulo: 'Trocar senha', erro: 'A nova senha deve ter pelo menos 6 caracteres.',
-                });
-            }
+
             if (newPassword !== confirmPassword) {
-                return res.status(400).renderComLayout('change-password', {
-                    titulo: 'Trocar senha', erro: 'As novas senhas não coincidem.',
-                });
+                return res.send(`<script>alert("As senhas não coincidem."); window.location.href="/change-password";</script>`);
             }
+
             user.passwordHash = newPassword;
             await user.save();
-            return res.redirect('/profile?passwordChanged=1');
+
+            res.redirect('/profile');
         } catch (error) {
-            return next(error);
+            next(error);
         }
     }
 }

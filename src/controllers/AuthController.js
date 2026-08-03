@@ -1,11 +1,56 @@
-const homeData = require('../data/homeData')
+const { Op } = require('sequelize');
+const homeData = require('../data/homeData');
 
 const { sequelize, models } = require('../database');
 
-const { User, Role, SellerProfile } = models;
+const {
+    User,
+    Role,
+    SellerProfile,
+    Product,
+    Category,
+} = models;
+
+const IMAGE_CLASSES = {
+    '/images/hero-categories.webp': 'hero-sprite',
+    '/images/featured-products.webp': 'featured-sprite',
+    '/images/best-sellers.webp': 'best-sellers-sprite',
+};
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    }).format(Number(value));
+}
+
+function formatHomeProduct(product) {
+    return {
+        id: product.slug,
+        name: product.name,
+        category: product.category?.name || '',
+        price: formatCurrency(product.price),
+        oldPrice: product.oldPrice ? formatCurrency(product.oldPrice) : null,
+        discount: product.discountPercent
+            ? `-${product.discountPercent}%`
+            : null,
+        rating: Number(product.rating).toFixed(1).replace('.', ','),
+        reviews: product.reviewCount,
+        installments: 'em até 10x sem juros',
+        spriteClass: IMAGE_CLASSES[product.imageUrl] || 'featured-sprite',
+        positionClass: `sprite-${product.imagePosition}`,
+        searchTerms: [
+            product.category?.name,
+            product.seller?.storeName,
+            product.seller?.description,
+        ]
+            .filter(Boolean)
+            .join(' '),
+    };
+}
 
 class AuthController {
-    static home(req, res) {
+    static async home(req, res, next) {
         const searchTerm =
             typeof req.query.q === 'string'
                 ? req.query.q.trim()
@@ -18,34 +63,77 @@ class AuthController {
 
         const normalizedSearch = normalizeText(searchTerm);
 
-        const filterProducts = (products) => {
-            if (!normalizedSearch) return products;
+        try {
+            const where = {
+                status: 'ACTIVE',
+            };
 
-            return products.filter((product) => {
-                const searchableText = [
-                    product.name,
-                    product.category,
-                    product.searchTerms
-                ].join(' ');
+            if (normalizedSearch) {
+                where[Op.or] = [
+                    {
+                        name: {
+                            [Op.like]: `%${searchTerm}%`,
+                        },
+                    },
+                    {
+                        description: {
+                            [Op.like]: `%${searchTerm}%`,
+                        },
+                    },
+                ];
+            }
 
-                return normalizeText(searchableText)
-                    .includes(normalizedSearch);
+            const includes = [
+                {
+                    model: Category,
+                    as: 'category',
+                    attributes: ['id', 'name', 'slug'],
+                },
+                {
+                    model: SellerProfile,
+                    as: 'seller',
+                    attributes: ['id', 'storeName', 'slug', 'description'],
+                    required: true,
+                    where: { status: 'APPROVED' },
+                },
+            ];
+
+            const [featuredRows, bestSellerRows] = await Promise.all([
+                Product.findAll({
+                    where,
+                    include: includes,
+                    order: [
+                        ['rating', 'DESC'],
+                        ['createdAt', 'DESC'],
+                    ],
+                    limit: 4,
+                }),
+                Product.findAll({
+                    where,
+                    include: includes,
+                    order: [
+                        ['reviewCount', 'DESC'],
+                        ['rating', 'DESC'],
+                    ],
+                    limit: 4,
+                }),
+            ]);
+
+            const featuredProducts = featuredRows.map(formatHomeProduct);
+            const bestSellers = bestSellerRows.map(formatHomeProduct);
+
+            res.renderComLayout('home', {
+                titulo: 'Marketplace | Compre e venda com confiança',
+                pagina: 'home',
+                searchTerm,
+                categories: homeData.categories,
+                heroCategories: homeData.heroCategories,
+                featuredProducts,
+                bestSellers,
             });
-        };
-
-        res.renderComLayout('home', {
-            titulo: 'Marketplace | Compre e venda com confiança',
-            pagina: 'home',
-            searchTerm,
-            categories: homeData.categories,
-            heroCategories: homeData.heroCategories,
-            featuredProducts: filterProducts(
-                homeData.featuredProducts
-            ),
-            bestSellers: filterProducts(
-                homeData.bestSellers
-            )
-        });
+        } catch (error) {
+            next(error);
+        }
     }
 
     static showLogin(req, res) {

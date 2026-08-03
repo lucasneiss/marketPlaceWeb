@@ -102,7 +102,12 @@ class AuthController {
                 },
             ];
 
-            const [featuredRows, bestSellerRows] = await Promise.all([
+            const [
+                featuredRows,
+                bestSellerRows,
+                productCount,
+                sellerCount,
+            ] = await Promise.all([
                 Product.findAll({
                     where,
                     include: includes,
@@ -121,8 +126,18 @@ class AuthController {
                     ],
                     limit: 4,
                 }),
+                Product.count({
+                    where: { status: 'ACTIVE' },
+                }),
+                SellerProfile.count({
+                    where: { status: 'APPROVED' },
+                }),
             ]);
 
+            const stats = {
+                productCount,
+                sellerCount,
+            };
             const featuredProducts = featuredRows.map(formatHomeProduct);
             const bestSellers = bestSellerRows.map(formatHomeProduct);
 
@@ -134,11 +149,12 @@ class AuthController {
                 heroCategories: homeData.heroCategories,
                 featuredProducts,
                 bestSellers,
+                stats,
             });
-        } catch (error) {
-            next(error);
-        }
-    }
+                    } catch (error) {
+                        next(error);
+                }
+}
 
     static showLogin(req, res) {
         res.renderComLayout('login', { titulo: 'Entrar no Marketplace' });

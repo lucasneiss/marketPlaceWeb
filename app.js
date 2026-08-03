@@ -45,6 +45,7 @@ app.use((req, res, next) => {
             pagina: '',
             anoAtual: new Date().getFullYear(),
             query: req.query || {},
+            erro: null,
             ...res.locals,
             ...data,
         };

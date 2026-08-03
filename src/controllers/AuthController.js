@@ -157,16 +157,21 @@ class AuthController {
 }
 
     static showLogin(req, res) {
-        res.renderComLayout('login', { titulo: 'Entrar no Marketplace' });
+        res.renderComLayout('login', { titulo: 'Entrar no Marketplace', erro: null });
     }
 
     static showRegister(req, res) {
-        res.renderComLayout('register', { titulo: 'Criar uma Conta' });
+        res.renderComLayout('register', {
+            titulo: 'Criar uma Conta',
+            erro: null,
+            values: { name: '', email: '', role: 'CLIENT', storeName: '', description: '' },
+        });
     }
 
     // (POST /register)
     static async register(req, res, next) {
         const { name, email, password, role, storeName, description } = req.body;
+        const values = { name, email, role, storeName, description };
 
         const transaction = await sequelize.transaction();
 
@@ -174,12 +179,12 @@ class AuthController {
             const existingUser = await User.findOne({ where: { email }, transaction });
             if (existingUser) {
                 await transaction.rollback();
-                return res.send(`
-                    <script>
-                        alert("Este e-mail já está em uso! Por favor, utilize outro.");
-                        window.location.href = "/register"; 
-                    </script>
-                `);
+                res.status(409);
+                return res.renderComLayout('register', {
+                    titulo: 'Criar uma Conta',
+                    erro: 'Este e-mail já está em uso. Por favor, utilize outro.',
+                    values,
+                });
             }
 
             const user = await User.create({
@@ -214,7 +219,12 @@ class AuthController {
         } catch (error) {
             await transaction.rollback();
             console.error('Erro no registro de usuário:', error);
-            next(error);
+            res.status(400);
+            return res.renderComLayout('register', {
+                titulo: 'Criar uma Conta',
+                erro: 'Não foi possível concluir o cadastro. Verifique os dados e tente novamente.',
+                values,
+            });
         }
     }
     static async login(req, res, next) {
@@ -224,12 +234,20 @@ class AuthController {
             const user = await User.scope('withPassword').findOne({ where: { email } });
 
             if (!user) {
-                return res.send(`<script>alert("E-mail ou senha inválidos."); window.location.href="/login";</script>`);
+                res.status(401);
+                return res.renderComLayout('login', {
+                    titulo: 'Entrar no Marketplace',
+                    erro: 'E-mail ou senha inválidos.',
+                });
             }
 
             const senhaCorreta = await user.checkPassword(password);
             if (!senhaCorreta) {
-                return res.send(`<script>alert("E-mail ou senha inválidos."); window.location.href="/login";</script>`);
+                res.status(401);
+                return res.renderComLayout('login', {
+                    titulo: 'Entrar no Marketplace',
+                    erro: 'E-mail ou senha inválidos.',
+                });
             }
 
             req.session.userId = user.id;
@@ -278,7 +296,7 @@ class AuthController {
         }
     }
     static showChangePassword(req, res) {
-        res.renderComLayout('change-password', { titulo: 'Trocar senha' });
+        res.renderComLayout('change-password', { titulo: 'Trocar senha', erro: null });
     }
 
     static async changePassword(req, res, next) {
@@ -289,11 +307,19 @@ class AuthController {
 
             const senhaAtualCorreta = await user.checkPassword(currentPassword);
             if (!senhaAtualCorreta) {
-                return res.send(`<script>alert("Senha atual incorreta."); window.location.href="/change-password";</script>`);
+                res.status(400);
+                return res.renderComLayout('change-password', {
+                    titulo: 'Trocar senha',
+                    erro: 'Senha atual incorreta.',
+                });
             }
 
             if (newPassword !== confirmPassword) {
-                return res.send(`<script>alert("As senhas não coincidem."); window.location.href="/change-password";</script>`);
+                res.status(400);
+                return res.renderComLayout('change-password', {
+                    titulo: 'Trocar senha',
+                    erro: 'As senhas não coincidem.',
+                });
             }
 
             user.passwordHash = newPassword;

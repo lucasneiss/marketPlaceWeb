@@ -149,7 +149,6 @@ class OrderController {
             const io = req.app.get('io');
             result.notifications.forEach((notification) => emitNotification(io, notification.userId, notification));
             result.stockChanges.forEach((change) => io.emit('stock:updated', change));
-            result.notifications.forEach((notification) => emitNotification(io, notification.userId, notification));
             return res.redirect(`/orders/${result.order.id}?created=1`);
         } catch (error) {
             if (error.status === 400) return res.status(400).send(error.message);

@@ -3,98 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Marketplace">
+    <meta name="description" content="Marketplace multiusuário desenvolvido com Node.js, EJS, Sequelize e Socket.IO">
     <title><%= typeof titulo !== 'undefined' ? titulo : 'Marketplace' %></title>
-
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="/css/styles.css" rel="stylesheet">
-
     <link rel="icon" href="/images/favicon.png">
-
 </head>
-<body class="d-flex flex-column min-vh-100 <%= typeof pagina !== 'undefined' && pagina === 'home' ? 'home-page' : 'internal-page' %>">
-
+<body class="d-flex flex-column min-vh-100 <%= pagina === 'home' ? 'home-page' : 'internal-page' %>">
 <header class="site-header sticky-top">
     <nav class="navbar navbar-expand-lg bg-white border-bottom" aria-label="Navegação principal">
         <div class="container-xxl px-3 px-lg-4">
-            <a class="navbar-brand brand-mark d-flex align-items-center gap-2 me-lg-4" href="/" aria-label="Marketplace - Página inicial">
-                <span class="brand-icon" aria-hidden="true"><i class="bi bi-shop-window"></i></span>
+            <a class="navbar-brand brand-mark d-flex align-items-center gap-2 me-lg-4" href="/">
+                <span class="brand-icon"><i class="bi bi-shop-window"></i></span>
                 <span class="brand-accent">Marketplace</span>
             </a>
-
-            <button class="navbar-toggler border-0 shadow-none" 
-                    type="button" 
-                    data-bs-toggle="collapse" 
-                    data-bs-target="#mainNavbar" 
-                    aria-controls="mainNavbar" 
-                    aria-expanded="false" 
-                    aria-label="Abrir menu">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
             <div class="collapse navbar-collapse" id="mainNavbar">
-                <form
-                    class="header-search mx-lg-auto my-3 my-lg-0"
-                    action="/catalog"
-                    method="GET"
-                    role="search">
-                    <label
-                        class="visually-hidden"
-                        for="header-search-input">
-                        Buscar produtos
-                    </label>
-
-                    <i class="bi bi-search" aria-hidden="true"></i>
-
-                    <input
-                        class="form-control border-0 shadow-none"
-                        id="header-search-input"
-                        type="search"
-                        name="q"
-                        value="<%= typeof searchTerm !== 'undefined'
-                            ? searchTerm
-                            : '' %>"
-                        placeholder="Buscar produtos e categorias"
-                        autocomplete="off">
+                <form class="header-search mx-lg-auto my-3 my-lg-0" action="/catalog" method="GET" role="search">
+                    <i class="bi bi-search"></i>
+                    <input class="form-control border-0 shadow-none" type="search" name="q"
+                        value="<%= typeof searchTerm !== 'undefined' ? searchTerm : '' %>"
+                        placeholder="Buscar produtos" autocomplete="off">
                 </form>
-
                 <ul class="navbar-nav align-items-lg-center gap-lg-1 ms-lg-4">
-                    <li class="nav-item">
-                        <a
-                            class="nav-link <%= typeof pagina !== 'undefined' && pagina === 'catalog' ? 'active' : '' %>"
-                            href="/catalog"
-                            <%= typeof pagina !== 'undefined' && pagina === 'catalog' ? 'aria-current="page"' : '' %>
-                        >
-                            <i class="bi bi-grid-3x3-gap me-1" aria-hidden="true"></i> Catálogo
-                        </a>
-                    </li>
-
-                    <% if (typeof username !== 'undefined' && username) { %>
+                    <li class="nav-item"><a class="nav-link <%= pagina === 'catalog' ? 'active' : '' %>" href="/catalog"><i class="bi bi-grid-3x3-gap me-1"></i>Catálogo</a></li>
+                    <% if (isClient) { %>
+                        <li class="nav-item"><a class="nav-link position-relative" href="/cart"><i class="bi bi-cart3"></i><span class="ms-1">Carrinho</span><span id="cart-count" class="badge text-bg-danger rounded-pill ms-1"><%= typeof cartCount !== 'undefined' ? cartCount : 0 %></span></a></li>
+                    <% } %>
+                    <% if (currentUser) { %>
                         <li class="nav-item dropdown">
-                            <button class="btn account-button dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle me-1" aria-hidden="true"></i>
-                                <%= username %>
+                            <button class="btn account-button dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-1"></i><%= currentUser.name %>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
                                 <li><a class="dropdown-item" href="/lobby">Minha área</a></li>
+                                <% if (isClient) { %>
+                                    <li><a class="dropdown-item" href="/orders">Meus pedidos</a></li>
+                                    <li><a class="dropdown-item" href="/addresses">Meus endereços</a></li>
+                                <% } %>
+                                <% if (isSeller) { %><li><a class="dropdown-item" href="/seller">Painel do vendedor</a></li><% } %>
+                                <% if (isAdmin) { %><li><a class="dropdown-item" href="/admin">Painel administrativo</a></li><% } %>
                                 <li><a class="dropdown-item" href="/profile">Meu perfil</a></li>
-                                <li><a class="dropdown-item" href="/addresses">Meus endereços</a></li>
-                                <li><a class="dropdown-item" href="/notifications">Notificações</a></li>
+                                <li><a class="dropdown-item d-flex justify-content-between" href="/notifications">Notificações <span id="notification-count" class="badge text-bg-primary"><%= unreadNotifications %></span></a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="/logout">Sair</a></li>
                             </ul>
                         </li>
                     <% } else { %>
-                        
-                        <li class="nav-item">
-                            <a class="nav-link" href="/login">Entrar</a>
-                        </li>
-                        <li class="nav-item mt-2 mt-lg-0">
-                            <a class="btn btn-brand px-3" href="/register">Cadastrar</a>
-                        </li>
-
+                        <li class="nav-item"><a class="nav-link" href="/login">Entrar</a></li>
+                        <li class="nav-item mt-2 mt-lg-0"><a class="btn btn-brand px-3" href="/register">Cadastrar</a></li>
                     <% } %>
                 </ul>
             </div>
@@ -102,73 +63,30 @@
     </nav>
 </header>
 
-<main id="conteudo-principal" class="flex-grow-1 <%= typeof pagina !== 'undefined' && pagina === 'home' ? '' : 'container py-5' %>">
+<div id="live-toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080"></div>
+<main id="conteudo-principal" class="flex-grow-1 <%= pagina === 'home' ? '' : 'container py-5' %>">
     <%- body %>
 </main>
-
 <footer class="site-footer mt-auto">
     <div class="container-xxl px-3 px-lg-4 py-5">
-        <div class="row g-4 g-lg-5">
-            <div class="col-12 col-md-5 col-lg-4">
-                <a class="footer-brand d-inline-flex align-items-center gap-2 mb-3" href="/">
-                    <span class="brand-icon" aria-hidden="true"><i class="bi bi-shop-window"></i></span>
-                    <span class="footer-brand-accent">Marketplace</span>
-                </a>
-                <p class="footer-description mb-0">
-                    O melhor marketplace do Sem-Peixe (MG) e região.
-                </p>
-            </div>
-
-            <div class="col-6 col-md-3 col-lg-2 offset-lg-1">
-                <h2 class="footer-title">Comprar</h2>
-                <ul class="list-unstyled footer-links mb-0">
-                    <li><a href="/#destaques">Destaques</a></li>
-                    <li><a href="/#mais-vendidos">Mais vendidos</a></li>
-                    <li><a href="/#categorias">Categorias</a></li>
-                </ul>
-            </div>
-
-            <div class="col-6 col-md-4 col-lg-2">
-                <h2 class="footer-title">Vender</h2>
-                <ul class="list-unstyled footer-links mb-0">
-                    <li><a href="/register">Seja um vendedor</a></li>
-                    <li><a href="/login">Acessar conta</a></li>
-                </ul>
-            </div>
-
-            <div class="col-12 col-md-4 col-lg-2">
-                <h2 class="footer-title">Marketplace</h2>
-                <ul class="list-unstyled footer-links mb-0">
-                    <li><a href="/#sobre">Sobre nós</a></li>
-                    <li><a href="/#seguranca">Compra segura</a></li>
-                    <li><a href="/#atendimento">Atendimento</a></li>
-                </ul>
-            </div>
+        <div class="row g-4">
+            <div class="col-md-5"><a class="footer-brand d-inline-flex align-items-center gap-2 mb-3" href="/"><span class="brand-icon"><i class="bi bi-shop-window"></i></span><span class="footer-brand-accent">Marketplace</span></a><p class="footer-description">Produtos de diferentes vendedores em uma única plataforma.</p></div>
+            <div class="col-6 col-md-2"><h2 class="footer-title">Comprar</h2><ul class="list-unstyled footer-links"><li><a href="/catalog">Catálogo</a></li><li><a href="/#destaques">Destaques</a></li></ul></div>
+            <div class="col-6 col-md-2"><h2 class="footer-title">Vender</h2><ul class="list-unstyled footer-links"><li><a href="/register">Criar loja</a></li><li><a href="/seller">Área do vendedor</a></li></ul></div>
+            <div class="col-md-3"><h2 class="footer-title">Tecnologias</h2><p class="footer-description">Node.js, Express, EJS, jQuery, Sequelize, SQLite, Bootstrap e Socket.IO.</p></div>
         </div>
-
-        <div class="footer-bottom d-flex flex-column flex-md-row justify-content-between gap-2 mt-5 pt-4">
-            <p class="mb-0">&copy; <%= typeof anoAtual !== 'undefined' ? anoAtual : 2026 %> Marketplace.</p>
-            <p class="mb-0">Desenvolvido com Node.js, EJS e Bootstrap.</p>
-        </div>
+        <div class="footer-bottom d-flex justify-content-between gap-2 mt-5 pt-4"><p>&copy; <%= anoAtual %> Marketplace.</p><p>Projeto acadêmico - compras simuladas.</p></div>
     </div>
 </footer>
-
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<% if (
-    typeof pagina !== 'undefined'
-    && pagina === 'home'
-) { %>
-    <script src="/js/home.js"></script>
-<% } %>
-
-<% if (
-    typeof pagina !== 'undefined'
-    && pagina === 'catalog'
-) { %>
-    <script src="/js/catalog.js"></script>
-<% } %>
-
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/realtime.js"></script>
+<script src="/js/home.js"></script>
+<script src="/js/catalog.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/seller.js"></script>
+<script src="/js/notifications.js"></script>
+<script src="/js/admin.js"></script>
 </body>
 </html>

@@ -1,8 +1,7 @@
-<div class="text-center">
-    <h2>Bem-vindo, <%= username %>!</h2>
-    <p>Login realizado com sucesso.</p>
-    <a href="/profile" class="btn btn-outline-primary">Meu perfil</a>
-    <a href="/addresses" class="btn btn-outline-primary">Meus endereços</a>
-    <a href="/notifications" class="btn btn-outline-primary">Notificações</a>
-    <a href="/logout" class="btn btn-outline-danger">Sair</a>
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4"><div><p class="text-muted mb-1">Área autenticada</p><h1 class="h2">Bem-vindo, <%= currentUser.name %>!</h1><p class="mb-0">Escolha uma área para continuar.</p></div><a href="/logout" class="btn btn-outline-danger">Sair</a></div>
+<div class="row g-3">
+    <% if (isClient) { %><div class="col-md-4"><a class="card h-100 text-decoration-none text-reset shadow-sm" href="/cart"><div class="card-body"><i class="bi bi-cart3 fs-2"></i><h2 class="h5 mt-3">Carrinho</h2><p class="text-muted mb-0">Revise itens e finalize a compra simulada.</p></div></a></div><div class="col-md-4"><a class="card h-100 text-decoration-none text-reset shadow-sm" href="/orders"><div class="card-body"><i class="bi bi-box-seam fs-2"></i><h2 class="h5 mt-3">Meus pedidos</h2><p class="text-muted mb-0">Acompanhe estados e histórico.</p></div></a></div><div class="col-md-4"><a class="card h-100 text-decoration-none text-reset shadow-sm" href="/addresses"><div class="card-body"><i class="bi bi-geo-alt fs-2"></i><h2 class="h5 mt-3">Endereços</h2><p class="text-muted mb-0">Cadastre endereços para o checkout.</p></div></a></div><% } %>
+    <% if (isSeller) { %><div class="col-md-4"><a class="card h-100 text-decoration-none text-reset shadow-sm" href="/seller"><div class="card-body"><i class="bi bi-shop fs-2"></i><h2 class="h5 mt-3">Painel do vendedor</h2><p class="text-muted mb-0">Gerencie produtos, estoque e pedidos.</p></div></a></div><% } %>
+    <% if (isAdmin) { %><div class="col-md-4"><a class="card h-100 text-decoration-none text-reset shadow-sm" href="/admin"><div class="card-body"><i class="bi bi-shield-lock fs-2"></i><h2 class="h5 mt-3">Administração</h2><p class="text-muted mb-0">Gerencie toda a plataforma.</p></div></a></div><% } %>
+    <div class="col-md-4"><a class="card h-100 text-decoration-none text-reset shadow-sm" href="/notifications"><div class="card-body"><i class="bi bi-bell fs-2"></i><h2 class="h5 mt-3">Notificações</h2><p class="text-muted mb-0"><%= unreadNotifications %> não lidas.</p></div></a></div>
 </div>

@@ -1,49 +1,16 @@
-<div class="col" data-catalog-product>
+<div class="col" data-catalog-product data-product-id="<%= product.id %>">
     <article class="catalog-product-card h-100">
-        <a
-            class="catalog-product-image
-                <%= product.imageClass %>
-                <%= product.positionClass %>"
-            href="/products/<%= encodeURIComponent(product.slug) %>"
-            aria-label="Ver detalhes de <%= product.name %>"
-        >
-            <% if (product.discountLabel) { %>
-                <span class="discount-badge">
-                    <%= product.discountLabel %>
-                </span>
-            <% } %>
-
-            <span
-                class="catalog-stock-badge
-                <%= product.isAvailable
-                    ? 'is-available'
-                    : 'is-unavailable' %>"
-            >
-                <%= product.isAvailable
-                    ? 'Em estoque'
-                    : 'Esgotado' %>
-            </span>
+        <a class="catalog-product-image <%= product.imageClass %> <%= product.positionClass %>" href="/products/<%= product.slug %>">
+            <% if (!product.isSprite) { %><img src="<%= product.imageUrl %>" alt="<%= product.name %>" class="w-100 h-100 object-fit-cover"><% } %>
+            <% if (product.discountLabel) { %><span class="discount-badge"><%= product.discountLabel %></span><% } %>
+            <span class="catalog-stock-badge <%= product.isAvailable ? 'is-available' : 'is-unavailable' %>" data-stock-badge><%= product.isAvailable ? 'Em estoque' : 'Esgotado' %></span>
         </a>
-
         <div class="catalog-product-body">
-            <a href="/catalog?category=<%= product.category.slug %>">
-                <%= product.category.name %>
-            </a>
-
-            <h2 class="catalog-product-name">
-                <a href="/products/<%= product.slug %>">
-                    <%= product.name %>
-                </a>
-            </h2>
-
-            <p>
-                Vendido por
-                <strong><%= product.seller.storeName %></strong>
-            </p>
-
-            <strong class="catalog-price">
-                <%= product.formattedPrice %>
-            </strong>
+            <a href="/catalog?category=<%= product.category.slug %>"><%= product.category.name %></a>
+            <h2 class="catalog-product-name"><a href="/products/<%= product.slug %>"><%= product.name %></a></h2>
+            <p>Vendido por <a href="/sellers/<%= product.seller.slug %>"><strong><%= product.seller.storeName %></strong></a></p>
+            <strong class="catalog-price"><%= product.formattedPrice %></strong>
+            <% if (isClient && product.isAvailable) { %><button class="btn btn-brand btn-sm mt-3 w-100" data-add-cart data-product-id="<%= product.id %>">Adicionar ao carrinho</button><% } %>
         </div>
     </article>
 </div>

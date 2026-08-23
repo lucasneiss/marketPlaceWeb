@@ -277,133 +277,140 @@ const PRODUCT_DATA = [
 ];
 
 async function createUserWithRole(models, userData, role, password, transaction) {
-    const { User } = models;
+    const { User, Cart } = models;
     const [user] = await User.findOrCreate({
         where: { email: userData.email },
-        defaults: {
-            name: userData.name,
-            passwordHash: password,
-        },
+        defaults: { name: userData.name, passwordHash: password },
         transaction,
     });
-
-    await user.addRole(role, {
-        through: { assignedAt: new Date() },
-        transaction,
-    });
-
+    await user.addRole(role, { through: { assignedAt: new Date() }, transaction });
+    await Cart.findOrCreate({ where: { userId: user.id }, transaction });
     return user;
 }
 
 async function seedDatabase(models, transaction) {
     const {
-        User,
-        Role,
-        Address,
-        SellerProfile,
-        Category,
-        Product,
+        Role, Address, SellerProfile, Category, Product, ProductImage,
+        Order, OrderItem, OrderStatusHistory, Review, Notification,
     } = models;
     const roles = {};
     const categories = {};
     const sellers = {};
+    const sellerUsers = {};
+    const products = {};
 
     for (const roleData of ROLE_DATA) {
-        const [role] = await Role.findOrCreate({
-            where: { code: roleData.code },
-            defaults: roleData,
-            transaction,
-        });
+        const [role] = await Role.findOrCreate({ where: { code: roleData.code }, defaults: roleData, transaction });
         roles[role.code] = role;
     }
-
     for (const categoryData of CATEGORY_DATA) {
-        const [category] = await Category.findOrCreate({
-            where: { slug: categoryData.slug },
-            defaults: categoryData,
-            transaction,
-        });
+        const [category] = await Category.findOrCreate({ where: { slug: categoryData.slug }, defaults: categoryData, transaction });
         categories[category.slug] = category;
     }
 
     const demoPlainPassword = process.env.SEED_DEMO_PASSWORD || 'Marketplace@123';
+    const admin = await createUserWithRole(models, {
+        email: 'admin@marketplace.local', name: 'Administrador Demo',
+    }, roles.ADMIN, demoPlainPassword, transaction);
+    const client = await createUserWithRole(models, {
+        email: 'cliente@marketplace.local', name: 'Cliente Demo',
+    }, roles.CLIENT, demoPlainPassword, transaction);
 
-    await createUserWithRole(
-        models,
-        {
-            email: 'admin@marketplace.local',
-            name: 'Administrador Demo',
-        },
-        roles.ADMIN,
-        demoPlainPassword,
-        transaction,
-    );
-
-    const client = await createUserWithRole(
-        models,
-        {
-            email: 'cliente@marketplace.local',
-            name: 'Cliente Demo',
-        },
-        roles.CLIENT,
-        demoPlainPassword,
-        transaction,
-    );
-
-    await Address.findOrCreate({
+    const [address] = await Address.findOrCreate({
         where: { userId: client.id, label: 'Principal' },
         defaults: {
-            recipientName: client.name,
-            postalCode: '30130-010',
-            street: 'Avenida Afonso Pena',
-            number: '1000',
-            neighborhood: 'Centro',
-            city: 'Belo Horizonte',
-            state: 'MG',
-            isDefault: true,
+            recipientName: client.name, postalCode: '30130-010', street: 'Avenida Afonso Pena',
+            number: '1000', neighborhood: 'Centro', city: 'Belo Horizonte', state: 'MG', isDefault: true,
         },
         transaction,
     });
 
     for (const sellerData of SELLER_DATA) {
-        const user = await createUserWithRole(
-            models,
-            sellerData,
-            roles.SELLER,
-            demoPlainPassword,
-            transaction,
-        );
-
+        const user = await createUserWithRole(models, sellerData, roles.SELLER, demoPlainPassword, transaction);
         const [sellerProfile] = await SellerProfile.findOrCreate({
             where: { userId: user.id },
             defaults: {
-                storeName: sellerData.storeName,
-                slug: sellerData.slug,
-                description: sellerData.description,
-                status: 'APPROVED',
-                approvedAt: new Date(),
+                storeName: sellerData.storeName, slug: sellerData.slug, description: sellerData.description,
+                status: 'APPROVED', approvedAt: new Date(),
             },
             transaction,
         });
-
         sellers[sellerData.key] = sellerProfile;
+        sellerUsers[sellerData.key] = user;
     }
 
     for (const productData of PRODUCT_DATA) {
         const { seller, category, ...defaults } = productData;
-
-        await Product.findOrCreate({
+        const [product] = await Product.findOrCreate({
             where: { slug: productData.slug },
             defaults: {
-                ...defaults,
-                sellerId: sellers[seller].id,
-                categoryId: categories[category].id,
-                state: 'GOOD',
-                status: 'ACTIVE',
+                ...defaults, sellerId: sellers[seller].id, categoryId: categories[category].id,
+                state: 'GOOD', status: 'ACTIVE', rating: 0, reviewCount: 0,
             },
             transaction,
         });
+        await ProductImage.findOrCreate({
+            where: { productId: product.id, position: 0 },
+            defaults: { url: product.imageUrl, altText: product.name },
+            transaction,
+        });
+        products[product.slug] = product;
     }
+
+    const [demoOrder] = await Order.findOrCreate({
+        where: { number: 'MP-DEMO-001' },
+        defaults: {
+            clientId: client.id, addressId: address.id, recipientName: address.recipientName,
+            postalCode: address.postalCode, street: address.street, addressNumber: address.number,
+            complement: address.complement, neighborhood: address.neighborhood, city: address.city, state: address.state,
+            paymentMethod: 'PIX', deliveryMethod: 'STANDARD', shippingPrice: 20,
+            total: 369.90, status: 'DELIVERED',
+        },
+        transaction,
+    });
+
+    const demoProduct = products['tenis-pulse-run-pro'];
+    const [demoItem] = await OrderItem.findOrCreate({
+        where: { orderId: demoOrder.id, productId: demoProduct.id },
+        defaults: {
+            sellerId: demoProduct.sellerId, productName: demoProduct.name,
+            sellerName: sellers.urbano.storeName, unitPrice: demoProduct.price, quantity: 1,
+            discount: 0, imageUrl: demoProduct.imageUrl,
+        },
+        transaction,
+    });
+
+    const statusFlow = [
+        [null, 'PENDING', 'Pedido criado.'],
+        ['PENDING', 'CONFIRMED', 'Venda confirmada.'],
+        ['CONFIRMED', 'PREPARING', 'Pedido em preparação.'],
+        ['PREPARING', 'SHIPPED', 'Pedido enviado.'],
+        ['SHIPPED', 'DELIVERED', 'Pedido entregue.'],
+    ];
+    for (const [previousStatus, newStatus, observation] of statusFlow) {
+        await OrderStatusHistory.findOrCreate({
+            where: { orderId: demoOrder.id, newStatus },
+            defaults: { previousStatus, actorId: newStatus === 'PENDING' ? client.id : sellerUsers.urbano.id, observation },
+            transaction,
+        });
+    }
+
+    await Review.findOrCreate({
+        where: { orderItemId: demoItem.id },
+        defaults: {
+            clientId: client.id, productId: demoProduct.id, rating: 5,
+            comment: 'Produto excelente e entrega dentro do prazo.', status: 'APPROVED',
+        },
+        transaction,
+    });
+    await Notification.findOrCreate({
+        where: { userId: client.id, message: 'Bem-vindo ao Marketplace!' },
+        defaults: { type: 'WELCOME', url: '/catalog' },
+        transaction,
+    });
+
+    await demoProduct.update({ rating: 5, reviewCount: 1 }, { transaction });
+    void admin;
 }
 
 module.exports = {

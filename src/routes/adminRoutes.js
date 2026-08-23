@@ -1,0 +1,22 @@
+const express = require('express');
+const AdminController = require('../controllers/AdminController');
+const { requireRole } = require('../middlewares/auth');
+
+const router = express.Router();
+const adminOnly = requireRole('ADMIN');
+router.get('/admin', adminOnly, AdminController.dashboard);
+router.get('/admin/users', adminOnly, AdminController.users);
+router.post('/admin/users/:id/toggle', adminOnly, AdminController.toggleUser);
+router.get('/admin/sellers', adminOnly, AdminController.sellers);
+router.post('/admin/sellers/:id/status', adminOnly, AdminController.sellerStatus);
+router.get('/admin/categories', adminOnly, AdminController.categories);
+router.post('/admin/categories', adminOnly, AdminController.createCategory);
+router.post('/admin/categories/:id', adminOnly, AdminController.updateCategory);
+router.post('/admin/categories/:id/delete', adminOnly, AdminController.deleteCategory);
+router.get('/admin/orders', adminOnly, AdminController.orders);
+router.get('/admin/orders/:id', adminOnly, AdminController.orderDetails);
+router.get('/admin/products', adminOnly, AdminController.products);
+router.post('/admin/products/:id/toggle', adminOnly, AdminController.toggleProduct);
+router.get('/admin/reviews', adminOnly, AdminController.reviews);
+router.patch('/admin/reviews/:id/status', adminOnly, AdminController.reviewStatus);
+module.exports = router;

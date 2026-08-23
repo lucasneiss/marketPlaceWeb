@@ -1,76 +1,20 @@
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow border-0 rounded-3">
-            <div class="card-body p-4 p-sm-5">
-
-                <div class="text-center mb-4">
-                    <h2 class="fw-bold text-dark">Criar Conta</h2>
-                    <p class="text-muted">Registe-se para começar a comprar ou vender no nosso Marketplace</p>
-                </div>
-
-                <form action="/register" method="POST" id="registerForm">
-
-                    <div class="form-group mb-3">
-                        <label for="name" class="form-label fw-semibold text-secondary">Nome Completo</label>
-                        <input type="text" id="name" name="name" class="form-control form-control-lg" placeholder="Introduza o seu nome" required>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="email" class="form-label fw-semibold text-secondary">Endereço de E-mail</label>
-                        <input type="email" id="email" name="email" class="form-control form-control-lg" placeholder="exemplo@email.com" required>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="password" class="form-label fw-semibold text-secondary">Palavra-passe</label>
-                        <input type="password" id="password" name="password" class="form-control form-control-lg" placeholder="Mínimo de 6 caracteres" minlength="6" required>
-                    </div>
-
-                    <div class="form-group mb-4">
-                        <label for="role" class="form-label fw-semibold text-secondary">Quero criar conta como:</label>
-                        <select id="role" name="role" class="form-select form-select-lg" required>
-                            <option value="CLIENT" selected>Comprador (Cliente)</option>
-                            <option value="SELLER">Vendedor</option>
-                        </select>
-                    </div>
-
-                    <div id="sellerFields" class="p-3 bg-light rounded border border-dashed mb-4 d-none">
-                        <h5 class="fw-bold text-dark mb-3">Dados da Loja</h5>
-
-                        <div class="form-group mb-3">
-                            <label for="storeName" class="form-label fw-semibold text-secondary">Nome da Loja</label>
-                            <input type="text" id="storeName" name="storeName" class="form-control" placeholder="Ex: Loja do Lucas">
-                        </div>
-
-                        <div class="form-group mb-0">
-                            <label for="description" class="form-label fw-semibold text-secondary">Descrição da Loja</label>
-                            <textarea id="description" name="description" class="form-control" rows="3" placeholder="Fale um pouco sobre a sua loja..."></textarea>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm">Criar a minha conta</button>
-                </form>
-
-                <div class="text-center mt-4 pt-3 border-top">
-                    <p class="text-muted mb-0">Já tem uma conta? <a href="/login" class="text-primary fw-semibold text-decoration-none">Inicie sessão</a></p>
-                </div>
-
-            </div>
+<div class="row justify-content-center"><div class="col-lg-7"><div class="card border-0 shadow-sm"><div class="card-body p-4 p-lg-5">
+    <h1 class="h2">Criar uma conta</h1><p class="text-muted">Escolha se deseja comprar ou abrir uma loja.</p>
+    <% if (erro) { %><div class="alert alert-danger"><%= erro %></div><% } %>
+    <form action="/register" method="POST" id="registerForm">
+        <div class="mb-3"><label class="form-label" for="name">Nome completo</label><input class="form-control" id="name" name="name" value="<%= values.name || '' %>" required minlength="2"></div>
+        <div class="mb-3"><label class="form-label" for="email">E-mail</label><input class="form-control" type="email" id="email" name="email" value="<%= values.email || '' %>" required></div>
+        <div class="mb-3"><label class="form-label" for="password">Senha</label><input class="form-control" type="password" id="password" name="password" minlength="6" required><div class="form-text">Mínimo de 6 caracteres.</div></div>
+        <div class="mb-3"><label class="form-label" for="role">Tipo de conta</label><select class="form-select" id="role" name="role" required><option value="CLIENT" <%= values.role !== 'SELLER' ? 'selected' : '' %>>Cliente</option><option value="SELLER" <%= values.role === 'SELLER' ? 'selected' : '' %>>Vendedor</option></select></div>
+        <div id="sellerFields" class="border rounded p-3 mb-3 <%= values.role === 'SELLER' ? '' : 'd-none' %>">
+            <div class="mb-3"><label class="form-label" for="storeName">Nome da loja</label><input class="form-control" id="storeName" name="storeName" value="<%= values.storeName || '' %>"></div>
+            <div><label class="form-label" for="description">Descrição pública</label><textarea class="form-control" id="description" name="description" rows="3"><%= values.description || '' %></textarea></div>
+            <div class="form-text">Novas lojas ficam pendentes até a aprovação do administrador.</div>
         </div>
-    </div>
-</div>
-
+        <button class="btn btn-brand btn-lg w-100">Criar conta</button>
+    </form>
+    <p class="text-center mt-4 mb-0">Já tem uma conta? <a href="/login">Entrar</a></p>
+</div></div></div></div>
 <script>
-    const roleSelect = document.getElementById('role');
-    const sellerFields = document.getElementById('sellerFields');
-    const storeNameInput = document.getElementById('storeName');
-
-    roleSelect.addEventListener('change', function() {
-        if (this.value === 'SELLER') {
-            sellerFields.classList.remove('d-none');
-            storeNameInput.setAttribute('required', 'required');
-        } else {
-            sellerFields.classList.add('d-none');
-            storeNameInput.removeAttribute('required');
-        }
-    });
+(function(){const role=document.getElementById('role');const fields=document.getElementById('sellerFields');const store=document.getElementById('storeName');function update(){const seller=role.value==='SELLER';fields.classList.toggle('d-none',!seller);store.required=seller;}role.addEventListener('change',update);update();})();
 </script>

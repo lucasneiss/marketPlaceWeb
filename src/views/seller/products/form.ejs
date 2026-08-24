@@ -1,10 +1,65 @@
 <% const editing=Boolean(product); %>
-<div class="d-flex justify-content-between align-items-end mb-4"><div><p class="text-muted mb-1">Área do vendedor</p><h1 class="h2 mb-0"><%= editing ? 'Editar produto' : 'Cadastrar produto' %></h1></div><a href="/seller/products" class="btn btn-outline-secondary">Voltar</a></div>
+<div class="d-flex justify-content-between align-items-end mb-4"><div><p class="text-muted mb-1">Área do vendedor</p><h1 class="h2 mb-0"><%= editing ? 'Editar produto' : 'Cadastrar produto' %></h1></div><a href="/seller/products" class="btn btn-outline-secondary">Voltar</a>
+</div>
+
 <form action="<%= editing ? '/seller/products/'+product.id : '/seller/products' %>" method="POST" class="card card-body shadow-sm" data-product-form><div class="row g-3">
-<div class="col-md-8"><label class="form-label">Nome</label><input class="form-control" name="name" value="<%= editing ? product.name : '' %>" required minlength="2" maxlength="120"></div><div class="col-md-4"><label class="form-label">Categoria</label><select class="form-select" name="categoryId" required><% categories.forEach(function(category){ %><option value="<%= category.id %>" <%= editing && product.categoryId === category.id ? 'selected' : '' %>><%= category.name %></option><% }) %></select></div>
-<div class="col-12"><label class="form-label">Descrição</label><textarea class="form-control" name="description" rows="4" required><%= editing ? product.description : '' %></textarea></div>
-<div class="col-md-3"><label class="form-label">Preço</label><input class="form-control" name="price" type="number" min="0" step="0.01" value="<%= editing ? product.price : '' %>" required></div><div class="col-md-3"><label class="form-label">Preço anterior</label><input class="form-control" name="oldPrice" type="number" min="0" step="0.01" value="<%= editing && product.oldPrice ? product.oldPrice : '' %>"></div><div class="col-md-3"><label class="form-label">Desconto (%)</label><input class="form-control" name="discountPercent" type="number" min="0" max="100" value="<%= editing && product.discountPercent ? product.discountPercent : '' %>"></div><div class="col-md-3"><label class="form-label">Estoque</label><input class="form-control" name="quantity" type="number" min="0" value="<%= editing ? product.quantity : 0 %>" required></div>
-<div class="col-md-6"><label class="form-label">Imagem principal (URL ou /images/...)</label><input class="form-control" name="imageUrl" value="<%= editing ? product.imageUrl : '/images/featured-products.webp' %>" data-image-url required></div><div class="col-md-3"><label class="form-label">Posição no sprite</label><select class="form-select" name="imagePosition"><% ['top-left','top-right','bottom-left','bottom-right'].forEach(function(pos){ %><option value="<%= pos %>" <%= editing && product.imagePosition===pos?'selected':'' %>><%= pos %></option><% }) %></select></div><div class="col-md-3"><label class="form-label">Estado</label><select class="form-select" name="state"><option value="GOOD" <%= editing&&product.state==='GOOD'?'selected':'' %>>Novo</option><option value="MEDIUM" <%= editing&&product.state==='MEDIUM'?'selected':'' %>>Usado - bom</option><option value="BAD" <%= editing&&product.state==='BAD'?'selected':'' %>>Usado - marcas</option><option value="UNKNOWN">Não informado</option></select></div>
-<div class="col-md-8"><label class="form-label">Imagens adicionais (uma URL por linha)</label><textarea class="form-control" name="additionalImages" rows="4"><%= editing && product.images ? product.images.filter(i=>i.position>0).map(i=>i.url).join('\n') : '' %></textarea></div><div class="col-md-4"><label class="form-label">Pré-visualização</label><div class="ratio ratio-4x3 border rounded bg-light overflow-hidden"><img data-image-preview class="object-fit-cover d-none" alt="Prévia"></div></div>
-<div class="col-md-4"><label class="form-label">Situação</label><select class="form-select" name="status"><option value="ACTIVE" <%= !editing||product.status==='ACTIVE'?'selected':'' %>>Ativo</option><option value="INACTIVE" <%= editing&&product.status==='INACTIVE'?'selected':'' %>>Inativo</option></select></div>
-<div class="col-12"><button class="btn btn-brand btn-lg"><%= editing ? 'Salvar alterações' : 'Cadastrar produto' %></button></div></div></form>
+
+<div class="col-md-8">
+    <label class="form-label">Nome</label>
+    <input class="form-control" name="name" value="<%= editing ? product.name : '' %>" required minlength="2" maxlength="120"></div>
+    <div class="col-md-4"><label class="form-label">Categoria</label><select class="form-select" name="categoryId" required><% categories.forEach(function(category){ %><option value="<%= category.id %>" <%= editing && product.categoryId === category.id ? 'selected' : '' %>><%= category.name %></option><% }) %></select>
+    </div>
+<div class="col-12"><label class="form-label">Descrição</label>
+    <textarea class="form-control" name="description" rows="4" required><%= editing ? product.description : '' %></textarea>
+</div>
+
+<div class="col-md-3">
+    <label class="form-label">Preço</label>
+    <input class="form-control" name="price" type="number" min="0" step="0.01" value="<%= editing ? product.price : '' %>" required></div><div class="col-md-3"><label class="form-label">Preço anterior</label>
+        <input class="form-control" name="oldPrice" type="number" min="0" step="0.01" value="<%= editing && product.oldPrice ? product.oldPrice : '' %>"></div><div class="col-md-3">
+            <label class="form-label">Desconto (%)</label>
+            <input class="form-control" name="discountPercent" type="number" min="0" max="100" value="<%= editing && product.discountPercent ? product.discountPercent : '' %>">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Estoque</label>
+            <input class="form-control" name="quantity" type="number" min="0" value="<%= editing ? product.quantity : 0 %>" required>
+</div>
+
+<div class="col-md-6">
+    <label for="imageAltText" class="form-label">
+        Texto alternativo da imagem
+    </label>
+
+    <input
+        id="imageAltText"
+        class="form-control"
+        name="imageAltText"
+        type="text"
+        maxlength="160"
+        value="<%= editing ? (product.imageAltText || '') : '' %>"
+        aria-describedby="imageAltTextHelp"
+        required
+    >
+
+    <div id="imageAltTextHelp" class="form-text">
+        Descreva de forma objetiva o que aparece na imagem.
+        Evite expressões como “imagem de” ou “foto de”. 
+        Ex.: Tênis esportivo preto com detalhes vermelhos.
+    </div>
+</div>
+<div class="col-md-8">
+    <label class="form-label">Imagens adicionais (uma URL por linha)</label>
+    <textarea class="form-control" name="additionalImages" rows="4"><%= editing && product.images ? product.images.filter(i=>i.position>0).map(i=>i.url).join('\n') : '' %></textarea>
+</div><div class="col-md-4"><label class="form-label">Pré-visualização</label>
+    <div class="ratio ratio-4x3 border rounded bg-light overflow-hidden">
+        <img data-image-preview class="object-fit-cover d-none" alt="Prévia"></div></div>
+<div class="col-md-4"><label class="form-label">Situação</label>
+    <select class="form-select" name="status"><option value="ACTIVE" <%= !editing||product.status==='ACTIVE'?'selected':'' %>>Ativo</option>
+        <option value="INACTIVE" <%= editing&&product.status==='INACTIVE'?'selected':'' %>>Inativo</option>
+    </select>
+</div>
+<div class="col-12">
+    <button class="btn btn-brand btn-lg"><%= editing ? 'Salvar alterações' : 'Cadastrar produto' %></button>
+</div>
+</div>
+</form>

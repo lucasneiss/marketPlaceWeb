@@ -71,6 +71,11 @@ module.exports = (sequelize) => {
                 allowNull: false,
                 field: 'image_url',
             },
+            imageAltText: {
+                type: DataTypes.STRING(160),
+                allowNull: true,
+                field: 'image_alt_text',
+            },
             imagePosition: {
                 type: DataTypes.ENUM(
                     'top-left',

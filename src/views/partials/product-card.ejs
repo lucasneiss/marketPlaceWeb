@@ -10,8 +10,7 @@
         <div
             class="product-image <%= product.spriteClass %> <%= product.positionClass %>"
             role="img"
-            aria-label="Imagem demonstrativa de <%= product.name %>"
-        >
+            aria-label="<%= product.imageAltText %>"        >
             <% if (product.discount) { %>
                 <span class="discount-badge"><%= product.discount %></span>
             <% } %>

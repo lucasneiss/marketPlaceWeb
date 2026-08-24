@@ -32,6 +32,7 @@ function productPayload(body) {
             ? body.imagePosition : 'top-left',
         state: ['UNKNOWN', 'GOOD', 'MEDIUM', 'BAD'].includes(body.state) ? body.state : 'GOOD',
         status: body.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE',
+        imageAltText: String(body.imageAltText || '').trim().slice(0, 160) || name,
     };
 }
 
@@ -47,19 +48,48 @@ async function uniqueSlug(name, currentId = null) {
 }
 
 async function replaceImages(product, body, transaction) {
-    const urls = String(body.additionalImages || '')
-        .split(/\r?\n/)
-        .map((value) => value.trim())
-        .filter(Boolean)
+    const urlLines = String(body.additionalImages || '')
+        .split(/\r?\n/);
+
+    const altLines = String(body.additionalImageAlts || '')
+        .split(/\r?\n/);
+
+    const images = urlLines
+        .map((url, index) => ({
+            url: url.trim(),
+
+            altText: String(altLines[index] || '')
+                .trim()
+                .slice(0, 160),
+        }))
+        .filter((image) => image.url)
         .slice(0, 6);
-    await ProductImage.destroy({ where: { productId: product.id, position: { [Op.gt]: 0 } }, transaction });
-    if (urls.length) {
-        await ProductImage.bulkCreate(urls.map((url, index) => ({
+
+    await ProductImage.destroy({
+        where: {
             productId: product.id,
-            url,
-            altText: `${product.name} - imagem ${index + 2}`,
-            position: index + 1,
-        })), { transaction });
+            position: {
+                [Op.gt]: 0
+            }
+        },
+        transaction
+    });
+
+    if (images.length) {
+        await ProductImage.bulkCreate(
+            images.map((image, index) => ({
+                productId: product.id,
+
+                url: image.url,
+
+                altText:
+                    image.altText
+                    || `${product.name} - imagem ${index + 2}`,
+
+                position: index + 1,
+            })),
+            { transaction }
+        );
     }
 }
 
@@ -162,7 +192,10 @@ class SellerController {
             const product = await sequelize.transaction(async (transaction) => {
                 const created = await Product.create(payload, { transaction });
                 await ProductImage.create({
-                    productId: created.id, url: created.imageUrl, altText: created.name, position: 0,
+                    productId: created.id,
+                    url: created.imageUrl,
+                    altText: created.imageAltText || created.name,
+                    position: 0,
                 }, { transaction });
                 await replaceImages(created, req.body, transaction);
                 return created;
@@ -199,13 +232,28 @@ class SellerController {
                 await product.update(payload, { transaction });
                 await replaceImages(product, req.body, transaction);
                 await ProductImage.findOrCreate({
-                    where: { productId: product.id, position: 0 },
-                    defaults: { url: product.imageUrl, altText: product.name },
+                    where: {
+                        productId: product.id,
+                        position: 0
+                    },
+                    defaults: {
+                        url: product.imageUrl,
+                        altText: product.imageAltText || product.name
+                    },
                     transaction,
                 });
                 await ProductImage.update(
-                    { url: product.imageUrl, altText: product.name },
-                    { where: { productId: product.id, position: 0 }, transaction },
+                    {
+                        url: product.imageUrl,
+                        altText: product.imageAltText || product.name
+                    },
+                    {
+                        where: {
+                            productId: product.id,
+                            position: 0
+                        },
+                        transaction
+                    },
                 );
             });
             const io = req.app.get('io');

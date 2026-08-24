@@ -77,9 +77,102 @@
         </div>
         <div class="footer-bottom d-flex justify-content-between gap-2 mt-5 pt-4"><p>&copy; <%= anoAtual %> Marketplace.</p><p>Projeto acadêmico - compras simuladas.</p></div>
     </div>
+
+<div
+    class="modal fade"
+    id="actionConfirmModal"
+    tabindex="-1"
+    aria-labelledby="actionConfirmModalTitle"
+    aria-describedby="actionConfirmModalDescription"
+    aria-hidden="true"
+>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content confirm-action-modal">
+
+            <div class="modal-header confirm-action-header">
+                <div class="d-flex align-items-center gap-3">
+
+                    <div
+                        class="confirm-action-icon"
+                        aria-hidden="true"
+                    >
+                        !
+                    </div>
+
+                    <div>
+                        <span class="confirm-action-eyebrow">
+                            Atenção
+                        </span>
+
+                        <h2
+                            class="modal-title fs-4 mb-0"
+                            id="actionConfirmModalTitle"
+                        >
+                            Confirmar ação
+                        </h2>
+                    </div>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar janela de confirmação"
+                ></button>
+            </div>
+
+            <div class="modal-body p-4">
+
+                <div class="confirm-action-warning">
+                    <strong class="d-block mb-2">
+                        Revise antes de continuar
+                    </strong>
+
+                    <p
+                        id="actionConfirmModalDescription"
+                        class="mb-0"
+                    >
+                        Deseja realmente continuar?
+                    </p>
+                </div>
+
+                <p class="text-muted small mt-3 mb-0">
+                    Você pode selecionar “Voltar e revisar” para
+                    conferir as informações antes de concluir.
+                </p>
+
+            </div>
+
+            <div class="modal-footer confirm-action-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-lg"
+                    data-bs-dismiss="modal"
+                    data-confirm-cancel
+                >
+                    Voltar e revisar
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-brand btn-lg"
+                    data-confirm-proceed
+                >
+                    Confirmar
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
 </footer>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/confirm-actions.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/js/realtime.js"></script>
 <script src="/js/home.js"></script>

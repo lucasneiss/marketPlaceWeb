@@ -1,7 +1,11 @@
 <div class="col" data-catalog-product data-product-id="<%= product.id %>">
     <article class="catalog-product-card h-100">
         <a class="catalog-product-image <%= product.imageClass %> <%= product.positionClass %>" href="/products/<%= product.slug %>">
-            <% if (!product.isSprite) { %><img src="<%= product.imageUrl %>" alt="<%= product.name %>" class="w-100 h-100 object-fit-cover"><% } %>
+            <img
+                src="<%= product.imageUrl %>"
+                alt="<%= product.imageAltText || product.name %>"
+                class="w-100 h-100 object-fit-cover"
+            >
             <% if (product.discountLabel) { %><span class="discount-badge"><%= product.discountLabel %></span><% } %>
             <span class="catalog-stock-badge <%= product.isAvailable ? 'is-available' : 'is-unavailable' %>" data-stock-badge><%= product.isAvailable ? 'Em estoque' : 'Esgotado' %></span>
         </a>

@@ -3,7 +3,13 @@
     <div class="row g-0">
         <div class="col-lg-6">
             <div class="product-detail-image <%= product.imageClass %> <%= product.positionClass %>">
-                <% if (!product.isSprite) { %><img src="<%= product.imageUrl %>" alt="<%= product.name %>" class="w-100 h-100 object-fit-cover"><% } %>
+                <% if (!product.isSprite) { %>
+                    <img
+                    src="<%= product.imageUrl %>"
+                    alt="<%= product.imageAltText || product.name %>"
+                    class="w-100 h-100 object-fit-cover"
+                    >
+                <% } %>
                 <% if (product.discountLabel) { %><span class="product-detail-discount"><%= product.discountLabel %></span><% } %>
             </div>
             <% if (product.images && product.images.length > 1) { %><div class="row g-2 p-3"><% product.images.slice(1).forEach(function(image) { %><div class="col-4"><img src="<%= image.url %>" alt="<%= image.altText || product.name %>" class="img-fluid rounded border"></div><% }) %></div><% } %>

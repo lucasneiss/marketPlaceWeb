@@ -1,10 +1,25 @@
 <div class="d-flex justify-content-between align-items-end mb-4"><div><p class="text-muted mb-1">Etapa final</p><h1 class="h2 mb-0">Checkout</h1></div><a href="/cart" class="btn btn-outline-secondary">Voltar ao carrinho</a></div>
 <% if (!addresses.length) { %><div class="alert alert-warning">Cadastre um endereço antes de finalizar. <a href="/addresses/new">Cadastrar endereço</a></div><% } %>
-<form action="/checkout" method="POST" class="row g-4">
-    <div class="col-lg-8">
+<form
+    action="/checkout"
+    method="POST"
+    class="row g-4"
+    data-confirm
+    data-confirm-title="Confirmar compra"
+    data-confirm-message="Revise os produtos, endereço, forma de entrega e pagamento. Deseja finalizar a compra? O pedido será criado e os produtos serão retirados do estoque."
+    data-confirm-label="Sim, finalizar compra"
+    data-confirm-variant="btn-brand"
+>    
+<div class="col-lg-8">
         <section class="card shadow-sm mb-4"><div class="card-body"><h2 class="h5">1. Endereço</h2><div class="row g-3"><% addresses.forEach(function(address) { %><div class="col-md-6"><label class="card h-100 p-3"><div class="form-check"><input class="form-check-input" type="radio" name="addressId" value="<%= address.id %>" <%= address.isDefault ? 'checked' : '' %> required><strong class="ms-1"><%= address.label %></strong></div><small class="text-muted mt-2"><%= address.street %>, <%= address.number %> - <%= address.city %>/<%= address.state %></small></label></div><% }) %></div></div></section>
         <section class="card shadow-sm mb-4"><div class="card-body"><h2 class="h5">2. Entrega simulada</h2><div class="form-check mb-2"><input class="form-check-input" type="radio" name="deliveryMethod" value="STANDARD" id="standard" checked><label class="form-check-label" for="standard">Padrão - R$ 20,00</label></div><div class="form-check mb-2"><input class="form-check-input" type="radio" name="deliveryMethod" value="EXPRESS" id="express"><label class="form-check-label" for="express">Expressa - R$ 45,00</label></div><div class="form-check"><input class="form-check-input" type="radio" name="deliveryMethod" value="PICKUP" id="pickup"><label class="form-check-label" for="pickup">Retirada - grátis</label></div></div></section>
         <section class="card shadow-sm"><div class="card-body"><h2 class="h5">3. Pagamento simulado</h2><select class="form-select" name="paymentMethod" required><option value="PIX">PIX simulado</option><option value="CREDIT_CARD">Cartão de crédito simulado</option><option value="BANK_SLIP">Boleto simulado</option></select><div class="form-text">Nenhum pagamento real será processado.</div></div></section>
     </div>
-    <aside class="col-lg-4"><div class="card shadow-sm position-sticky" style="top: 100px"><div class="card-body"><h2 class="h5">Revisão</h2><% cart.items.forEach(function(item) { %><div class="d-flex justify-content-between gap-3 py-2 border-bottom"><span><%= item.quantity %>x <%= item.product.name %></span><strong><%= item.formattedSubtotal %></strong></div><% }) %><div class="d-flex justify-content-between mt-3"><span>Produtos</span><strong><%= cart.formattedTotal %></strong></div><p class="small text-muted mt-3">O total final incluirá a entrega escolhida.</p><button class="btn btn-brand btn-lg w-100" <%= addresses.length ? '' : 'disabled' %>>Confirmar compra</button></div></div></aside>
+    <aside class="col-lg-4"><div class="card shadow-sm position-sticky" style="top: 100px"><div class="card-body"><h2 class="h5">Revisão</h2><% cart.items.forEach(function(item) { %><div class="d-flex justify-content-between gap-3 py-2 border-bottom"><span><%= item.quantity %>x <%= item.product.name %></span><strong><%= item.formattedSubtotal %></strong></div><% }) %><div class="d-flex justify-content-between mt-3"><span>Produtos</span><strong><%= cart.formattedTotal %></strong></div><p class="small text-muted mt-3">O total final incluirá a entrega escolhida.</p>
+<button
+    type="submit"
+    class="btn btn-brand btn-lg w-100"
+    <%= addresses.length ? '' : 'disabled' %>
+>Confirmar compra</button>
+</div></div></aside>
 </form>

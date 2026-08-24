@@ -1886,3 +1886,96 @@ a {
         width: 100%;
     }
 }
+
+
+/* =========================================================
+   MODAL DE CONFIRMAÇÃO DE AÇÕES CRÍTICAS
+   ========================================================= */
+
+.confirm-action-modal {
+    border: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.confirm-action-header {
+    padding: 1.4rem 1.5rem;
+    background-color: #fff4e5;
+    border-bottom: 3px solid #f59e0b;
+}
+
+.confirm-action-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 52px;
+    height: 52px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background-color: #b45309;
+    color: #ffffff;
+
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.confirm-action-eyebrow {
+    display: block;
+
+    margin-bottom: 0.15rem;
+
+    color: #92400e;
+
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.confirm-action-warning {
+    padding: 1rem 1.2rem;
+
+    border: 2px solid #f59e0b;
+    border-left-width: 6px;
+    border-radius: 10px;
+
+    background-color: #fffbeb;
+
+    color: #1f2937;
+
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.confirm-action-footer {
+    padding: 1rem 1.5rem 1.5rem;
+
+    border-top: 1px solid #dee2e6;
+
+    gap: 0.75rem;
+}
+
+.confirm-action-footer .btn {
+    min-height: 50px;
+
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+
+    font-weight: 700;
+}
+
+@media (max-width: 575.98px) {
+    .confirm-action-footer {
+        flex-direction: column-reverse;
+    }
+
+    .confirm-action-footer .btn {
+        width: 100%;
+    }
+}

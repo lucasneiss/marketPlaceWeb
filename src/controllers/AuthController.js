@@ -31,6 +31,7 @@ function formatHomeProduct(product) {
         category: product.category?.name || '',
         sellerName: product.seller?.storeName || '',
         detailsUrl: `/products/${product.slug}`,
+        imageAltText: product.imageAltText || product.name,
         price: formatCurrency(product.price),
         oldPrice: product.oldPrice ? formatCurrency(product.oldPrice) : null,
         discount: product.discountPercent
